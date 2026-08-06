@@ -1,0 +1,122 @@
+<?php
+
+use App\Http\Controllers\{AuthController, ConsultationController, DashboardController,
+    MotDePasseOublieController, OrientationController, ProfilController, RendezVousController};
+use App\Http\Controllers\Admin\{DossierController, PlanningController, StructureController, UtilisateurController};
+use App\Http\Controllers\Medecin\DossierController as MedecinDossierController;
+use App\Http\Controllers\Medecin\IndisponibiliteController;
+use App\Livewire\QuestionnaireOrientation;
+use Illuminate\Support\Facades\Route;
+
+/* ---- Public ----
+ | Comme sur les plateformes du même type, on peut s'orienter et consulter les
+ | structures sans compte : la connexion n'est exigée qu'au moment de réserver,
+ | car c'est là qu'un dossier patient est engagé. */
+Route::get('/', [OrientationController::class, 'accueil'])->name('accueil');
+Route::get('/orientation', QuestionnaireOrientation::class)->name('orientation');        // F1
+Route::get('/urgence', [OrientationController::class, 'urgence'])->name('urgence');     // F2
+Route::get('/resultats', [OrientationController::class, 'resultats'])->name('resultats'); // F3
+Route::get('/medecin/{medecin}/calendrier', [RendezVousController::class, 'calendrier'])
+    ->name('calendrier');                                                                 // F4
+
+/* ---- Authentification (chap. 4.2.2) ---- */
+Route::middleware('guest')->group(function () {
+    Route::get('/connexion', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/connexion', [AuthController::class, 'login']);
+    Route::get('/inscription', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/inscription', [AuthController::class, 'register']);
+    Route::get('/inscription-medecin', [AuthController::class, 'showRegisterMedecin'])->name('register.medecin');
+    Route::post('/inscription-medecin', [AuthController::class, 'registerMedecin']);
+
+    // Mot de passe oublié : le lien de réinitialisation part vers l'adresse
+    // enregistrée, seul le titulaire de la boîte peut donc reprendre la main.
+    Route::get('/mot-de-passe-oublie', [MotDePasseOublieController::class, 'demander'])->name('password.request');
+    Route::post('/mot-de-passe-oublie', [MotDePasseOublieController::class, 'envoyerLien'])
+        ->middleware('throttle:6,1')->name('password.email');
+    Route::get('/reinitialiser/{token}', [MotDePasseOublieController::class, 'formulaire'])->name('password.reset');
+    Route::post('/reinitialiser', [MotDePasseOublieController::class, 'reinitialiser'])->name('password.update');
+});
+
+/* ---- Confirmation de l'adresse e-mail ----
+ | L'adresse saisie à l'inscription doit être confirmée : c'est la seule preuve
+ | qu'elle existe ET qu'elle appartient bien à l'utilisateur. Tant que ce n'est
+ | pas fait, l'espace personnel reste inaccessible (middleware "verified"). */
+Route::middleware('auth')->group(function () {
+    // Accessible sans confirmation : sinon un compte non confirmé ne pourrait
+    // même pas se déconnecter.
+    Route::post('/deconnexion', [AuthController::class, 'logout'])->name('logout');
+
+    Route::get('/email/confirmation', [AuthController::class, 'noticeVerification'])
+        ->name('verification.notice');
+
+    Route::get('/email/confirmer/{id}/{hash}', [AuthController::class, 'verifierEmail'])
+        ->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+
+    Route::post('/email/renvoyer', [AuthController::class, 'renvoyerVerification'])
+        ->middleware('throttle:6,1')->name('verification.send');
+
+    // Profil accessible sans confirmation : il faut pouvoir corriger une adresse
+    // mal saisie. Changer d'adresse annule la confirmation et renvoie un lien.
+    Route::get('/profil', [ProfilController::class, 'show'])->name('profil');
+    Route::put('/profil', [ProfilController::class, 'update'])->name('profil.update');
+    Route::put('/profil/mot-de-passe', [ProfilController::class, 'updatePassword'])->name('profil.password');
+});
+
+/* ---- Espace connecté (adresse confirmée) ---- */
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::put('/profil/dossier', [ProfilController::class, 'updatePatient'])
+        ->middleware('role:patient')->name('profil.dossier');
+
+    Route::post('/medecin/{medecin}/reserver', [RendezVousController::class, 'reserver'])
+        ->middleware('role:patient')->name('rdv.reserver');                              // F4
+    Route::delete('/rdv/{rendezVous}/annuler', [RendezVousController::class, 'annuler'])
+        ->middleware('role:patient')->name('rdv.annuler');
+
+    Route::post('/rdv/{rendezVous}/consultation', [ConsultationController::class, 'store'])
+        ->middleware('role:medecin')->name('consultation.store');                        // F9
+    Route::get('/consultation/{consultation}/ordonnance', [ConsultationController::class, 'ordonnance'])
+        ->name('consultation.ordonnance');
+
+    Route::post('/admin/medecin/{medecin}/valider', [DashboardController::class, 'validerMedecin'])
+        ->middleware('role:admin')->name('admin.valider');                               // UC-A2
+
+    // Plannings : définis par l'admin, pas par le médecin (chap. 3)
+    Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/medecin/{medecin}/planning', [PlanningController::class, 'edit'])->name('planning.edit');
+        Route::post('/medecin/{medecin}/planning', [PlanningController::class, 'store'])->name('planning.store');
+        Route::delete('/planning/{disponibilite}', [PlanningController::class, 'destroy'])->name('planning.destroy');
+        // Gestion des comptes utilisateurs (chap. 2 : créer, modifier, suspendre, supprimer)
+        Route::get('/utilisateurs', [UtilisateurController::class, 'index'])->name('utilisateurs.index');
+        Route::get('/utilisateurs/creer', [UtilisateurController::class, 'create'])->name('utilisateurs.create');
+        Route::post('/utilisateurs', [UtilisateurController::class, 'store'])->name('utilisateurs.store');
+        Route::get('/utilisateurs/{utilisateur}/modifier', [UtilisateurController::class, 'edit'])->name('utilisateurs.edit');
+        Route::put('/utilisateurs/{utilisateur}', [UtilisateurController::class, 'update'])->name('utilisateurs.update');
+        Route::patch('/utilisateurs/{utilisateur}/activation', [UtilisateurController::class, 'basculerActivation'])
+            ->name('utilisateurs.activation');
+        Route::delete('/utilisateurs/{utilisateur}', [UtilisateurController::class, 'destroy'])->name('utilisateurs.destroy');
+
+        Route::get('/dossiers', [DossierController::class, 'index'])->name('dossiers.index');
+        Route::get('/dossiers/{dossier}', [DossierController::class, 'show'])->name('dossiers.show');
+
+        // Gestion des structures médicales référencées (chap. 2)
+        Route::get('/structures', [StructureController::class, 'index'])->name('structures.index');
+        Route::get('/structures/creer', [StructureController::class, 'create'])->name('structures.create');
+        Route::post('/structures', [StructureController::class, 'store'])->name('structures.store');
+        Route::get('/structures/{structure}/modifier', [StructureController::class, 'edit'])->name('structures.edit');
+        Route::put('/structures/{structure}', [StructureController::class, 'update'])->name('structures.update');
+        Route::delete('/structures/{structure}', [StructureController::class, 'destroy'])->name('structures.destroy');
+    });
+
+    // Indisponibilités ponctuelles : déclarées par le médecin (exceptions au planning de base)
+    Route::middleware('role:medecin')->prefix('medecin')->name('medecin.')->group(function () {
+        // Dossier d'un patient : autorisé par DossierPolicy uniquement si un
+        // rendez-vous CONFIRME ou HONORE lie ce médecin à ce patient (chap. 2).
+        Route::get('/dossier/{dossier}', [MedecinDossierController::class, 'show'])->name('dossier');
+
+        Route::post('/indisponibilite', [IndisponibiliteController::class, 'store'])->name('indisponibilite.store');
+        Route::delete('/indisponibilite/{disponibilite}', [IndisponibiliteController::class, 'destroy'])
+            ->name('indisponibilite.destroy');
+    });
+});

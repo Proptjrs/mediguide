@@ -1,0 +1,118 @@
+x-app-env: &app-env
+  DB_CONNECTION: mysql
+  DB_HOST: mysql
+  DB_PORT: 3306
+  DB_DATABASE: mediguide
+  DB_USERNAME: root
+  DB_PASSWORD: secret
+  REDIS_HOST: redis
+  SESSION_DRIVER: database
+  QUEUE_CONNECTION: database
+  CACHE_STORE: database
+  # Envoi SMTP réel vers Mailpit : les e-mails partent vraiment (protocole SMTP)
+  # et sont consultables sur http://localhost:8025. Pour livrer dans une vraie
+  # boîte, remplacer par les identifiants d'un fournisseur (Brevo, Gmail…).
+  MAIL_MAILER: ${MAIL_MAILER:-smtp}
+  MAIL_HOST: ${MAIL_HOST:-mailpit}
+  MAIL_PORT: ${MAIL_PORT:-1025}
+  MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-notifications@mediguide.sn}
+  MAIL_FROM_NAME: MediGuide
+  # Instances OSM auto-hébergées (profil "osm", cf. README) : lève la dépendance
+  # aux serveurs publics documentée en section 8 du cahier des charges.
+  OSRM_URL: ${OSRM_URL:-https://router.project-osrm.org}
+  NOMINATIM_URL: ${NOMINATIM_URL:-https://nominatim.openstreetmap.org}
+
+services:
+  app:
+    build: { context: ., dockerfile: docker/Dockerfile }
+    volumes: [ ".:/var/www/html" ]
+    depends_on: [ mysql, redis, mailpit ]
+    environment: *app-env
+  nginx:
+    image: nginx:alpine
+    ports: [ "8000:80" ]
+    volumes: [ ".:/var/www/html", "./docker/nginx.conf:/etc/nginx/conf.d/default.conf" ]
+    depends_on: [ app ]
+  mysql:
+    image: mysql:8.0
+    environment: { MYSQL_DATABASE: mediguide, MYSQL_ROOT_PASSWORD: secret }
+    volumes: [ "dbdata:/var/lib/mysql" ]
+  redis:
+    image: redis:7-alpine
+    volumes: [ "redisdata:/data" ]
+
+  # Serveur SMTP local : les e-mails sont réellement transmis par SMTP puis
+  # consultables sur http://localhost:8025 (utile en soutenance, sans dépendre
+  # d'un fournisseur externe ni exposer de vraies adresses).
+  mailpit:
+    image: axllent/mailpit:latest
+    ports: [ "8025:8025", "1025:1025" ]
+
+  queue:
+    build: { context: ., dockerfile: docker/Dockerfile }
+    command: ["php", "artisan", "queue:work", "--tries=3"]
+    volumes: [ ".:/var/www/html" ]
+    depends_on: [ mysql, redis, mailpit ]
+    environment: *app-env
+
+  # ------------------------------------------------------------------
+  # Profil "osm" — hébergement local d'OSRM et Nominatim (section 8).
+  #
+  # 1) Préparation unique du graphe routier (extrait Sénégal + Gambie, ~100 Mo
+  #    téléchargés, ~450 Mo de graphe, ~5 min de calcul). Utiliser "run" et non
+  #    "up" : "up" démarrerait aussi les services applicatifs, et une
+  #    interruption pendant l'initialisation de MySQL corrompt son volume.
+  #      docker compose --profile osm-prep run --rm osrm-prep
+  #
+  # 2) Démarrage des instances locales puis de l'app branchée dessus :
+  #      docker compose --profile osm up -d osrm
+  #      OSRM_URL=http://osrm:5000 docker compose up -d
+  #
+  #    Nominatim (géocodage) demande un import plus lourd (~30-60 min) :
+  #      docker compose --profile osm up -d nominatim
+  #      NOMINATIM_URL=http://nominatim:8080 docker compose up -d
+  # ------------------------------------------------------------------
+
+  # L'image osrm-backend ne contient ni curl ni wget : le téléchargement
+  # de l'extrait Geofabrik est délégué à un conteneur dédié.
+  osrm-fetch:
+    profiles: ["osm-prep"]
+    image: curlimages/curl:latest
+    user: root
+    command:
+      - "-fSL"
+      - "-o"
+      - "/data/senegal-and-gambia-latest.osm.pbf"
+      - "https://download.geofabrik.de/africa/senegal-and-gambia-latest.osm.pbf"
+    volumes: [ "osrmdata:/data" ]
+
+  osrm-prep:
+    profiles: ["osm-prep"]
+    image: ghcr.io/project-osrm/osrm-backend:latest
+    entrypoint: ["/bin/bash", "/prep.sh"]
+    depends_on:
+      osrm-fetch:
+        condition: service_completed_successfully
+    volumes:
+      - "osrmdata:/data"
+      - "./docker/osrm-prep.sh:/prep.sh:ro"
+
+  osrm:
+    profiles: ["osm"]
+    image: ghcr.io/project-osrm/osrm-backend:latest
+    command: ["osrm-routed", "--algorithm", "mld", "/data/senegal-and-gambia-latest.osrm"]
+    ports: [ "5000:5000" ]
+    volumes: [ "osrmdata:/data" ]
+
+  nominatim:
+    profiles: ["osm"]
+    image: mediagis/nominatim:4.4
+    ports: [ "8090:8080" ]
+    environment:
+      PBF_URL: https://download.geofabrik.de/africa/senegal-and-gambia-latest.osm.pbf
+      REPLICATION_URL: https://download.geofabrik.de/africa/senegal-and-gambia-updates/
+      NOMINATIM_PASSWORD: nominatim
+    volumes: [ "nominatimdata:/var/lib/postgresql/14/main" ]
+    shm_size: 1g
+
+volumes: { dbdata: {}, redisdata: {}, osrmdata: {}, nominatimdata: {} }

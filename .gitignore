@@ -1,0 +1,15 @@
+/vendor
+/node_modules
+/.env
+/.env.backup
+/.env.dusk.local
+.env.*
+!.env.example
+/storage/*.key
+/storage/logs/*.log
+/public/storage
+.phpunit.result.cache
+/.phpunit.cache
+# Captures et journaux produits par Dusk à chaque exécution
+/tests/Browser/screenshots
+/tests/Browser/console
