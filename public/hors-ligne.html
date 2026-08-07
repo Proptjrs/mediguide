@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hors connexion — MediGuide</title>
+<style>
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+         background:#F7F9FC; color:#101B2D; font-family:"Inter",system-ui,sans-serif; padding:24px; }
+  .carte { max-width:460px; background:#fff; border:1px solid #E2E8F0; border-radius:20px;
+           padding:38px 34px; text-align:center; box-shadow:0 10px 30px rgba(16,27,45,.07); }
+  .rond { width:64px; height:64px; margin:0 auto 20px; border-radius:50%; background:#FEF3C7;
+          display:flex; align-items:center; justify-content:center; font-size:30px; }
+  h1 { font-size:1.35rem; margin:0 0 12px; }
+  p  { color:#64748B; font-size:.95rem; line-height:1.6; margin:0 0 10px; }
+  ul { text-align:left; color:#64748B; font-size:.92rem; line-height:1.7; margin:16px 0 22px; padding-left:20px; }
+  a  { display:inline-block; background:#0284C7; color:#fff; text-decoration:none; font-weight:600;
+       padding:12px 24px; border-radius:999px; }
+</style>
+</head>
+<body>
+<div class="carte">
+  <div class="rond">📶</div>
+  <h1>Vous êtes hors connexion</h1>
+  <p>MediGuide n'arrive pas à joindre le serveur. Votre téléphone n'est probablement plus connecté à Internet.</p>
+  <ul>
+    <li>Les pages que vous avez déjà ouvertes restent consultables.</li>
+    <li>Vos réponses au questionnaire ont été conservées sur cet appareil : vous les retrouverez au retour du réseau.</li>
+    <li>Une réservation de rendez-vous exige la connexion, pour garantir que le créneau est encore libre.</li>
+  </ul>
+  <p><b>En cas d'urgence, appelez le 1515 (SAMU) ou rendez-vous directement aux urgences.</b></p>
+  <a href="/">Réessayer</a>
+</div>
+</body>
+</html>

@@ -18,25 +18,41 @@ use Tests\DuskTestCase;
  */
 class CapturesMemoireTest extends DuskTestCase
 {
-    private const LARGEUR = 1600;
+    private const LARGEUR = 1440;
+    private const HAUTEUR = 880;
 
-    /** Photographie la page entière, du haut jusqu'au bas. */
+    /**
+     * Photographie l'écran tel que l'utilisateur le voit.
+     *
+     * On ne déroule pas la page entière : le pied de page et les mentions
+     * secondaires n'apportent rien à un rapport et écrasent le contenu utile.
+     */
     private function prendre(Browser $b, string $url, string $fichier, string $attendre): void
     {
-        $b->resize(self::LARGEUR, 1000)
+        $b->resize(self::LARGEUR, self::HAUTEUR)
             ->visit($url)
             ->waitForText($attendre, 20)
-            ->pause(1500);                       // laisse finir les animations d'apparition
-
-        $hauteur = (int) $b->script(
-            'return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);'
-        )[0];
-
-        $b->resize(self::LARGEUR, min($hauteur + 120, 8000))
-            ->pause(1200)
+            ->pause(1800)                    // laisse finir les animations d'apparition
             ->script('window.scrollTo(0, 0);');
 
         $b->pause(400)->screenshot($fichier);
+    }
+
+    /**
+     * Photographie une zone située plus bas dans la page : le panneau visé est
+     * amené en haut de la fenêtre avant la prise de vue.
+     */
+    private function prendreZone(Browser $b, string $url, string $fichier,
+                                 string $attendre, string $ancre): void
+    {
+        $b->resize(self::LARGEUR, self::HAUTEUR)
+            ->visit($url)
+            ->waitForText($attendre, 20)
+            ->pause(1800)
+            ->script("document.evaluate(\"//h3[contains(., '{$ancre}')]\", document, null, 9, null)"
+                   . ".singleNodeValue?.scrollIntoView({block:'start'}); window.scrollBy(0, -110);");
+
+        $b->pause(600)->screenshot($fichier);
     }
 
     public function test_captures_pages_publiques(): void
@@ -102,6 +118,34 @@ class CapturesMemoireTest extends DuskTestCase
             $this->prendre($b, "/admin/utilisateurs/{$patient->id}/modifier", '21-admin-utilisateur-modifier', 'ompte');
             $this->prendre($b, "/admin/medecin/{$medecin->id}/planning", '22-admin-planning', 'Planning de consultation');
             $this->prendre($b, '/admin/dossiers', '23-admin-dossiers', 'dossier patient');
+            $this->prendreZone($b, '/dashboard', '24-admin-pilotage', 'Administration', 'Pilotage');
+            $this->prendreZone($b, '/dashboard', '25-admin-patients-risque', 'Administration',
+                'Patients à rappeler');
+        });
+    }
+
+    /**
+     * Les deux dispositifs destinés aux patients du district : la lecture à voix
+     * haute pour ceux qui lisent mal, et le bandeau de perte de connexion.
+     */
+    public function test_captures_accessibilite_et_hors_ligne(): void
+    {
+        $this->browse(function (Browser $b) {
+            $b->logout();
+
+            $b->resize(self::LARGEUR, self::HAUTEUR)
+                ->visit('/orientation')
+                ->waitForText('Où êtes-vous', 20)
+                ->pause(1500)
+                ->script('window.scrollTo(0, 0);');
+            $b->pause(400)->screenshot('26-questionnaire-ecouter');
+
+            // Perte de réseau simulée : le bandeau doit apparaître en bas.
+            $b->script("window.dispatchEvent(new Event('offline'));"
+                     . "document.body.classList.add('hors-ligne');");
+            $b->pause(700)->screenshot('27-hors-ligne');
+
+            $b->visit('/hors-ligne.html')->pause(900)->screenshot('28-page-hors-ligne');
         });
     }
 }

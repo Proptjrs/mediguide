@@ -25,6 +25,75 @@
         </div>
     </div>
 
+    {{-- Tableau de bord décisionnel : ce que la direction doit décider, et non
+         le simple décompte des enregistrements. Fenêtre de trente jours. --}}
+    <div class="panel">
+        <h3>Pilotage <span class="pill b">30 derniers jours</span></h3>
+        <p class="panel-note">Ces indicateurs servent à décider : rappeler les patients qui ne viennent pas,
+            renforcer une spécialité saturée, surveiller la part des cas urgents.</p>
+
+        <div class="dash-grid quatre">
+            <div class="kpi">
+                <div class="n" style="color:{{ $indicateurs['tauxManques'] > 15 ? 'var(--red)' : 'var(--green-dark)' }}">
+                    {{ $indicateurs['tauxManques'] }} %
+                </div>
+                <div class="l">Rendez-vous manqués</div>
+                <div class="sous">{{ $indicateurs['manques'] }} sur {{ $indicateurs['rdvClos'] }} passés</div>
+            </div>
+            <div class="kpi">
+                <div class="n">{{ $indicateurs['annulations'] }}</div>
+                <div class="l">Annulations</div>
+                <div class="sous">créneaux libérés à réattribuer</div>
+            </div>
+            <div class="kpi">
+                <div class="n">{{ $indicateurs['questionnaires'] }}</div>
+                <div class="l">Orientations demandées</div>
+                <div class="sous">urgence moyenne : {{ $indicateurs['urgenceMoyenne'] }} / 10</div>
+            </div>
+            <div class="kpi">
+                <div class="n" style="color:{{ $indicateurs['tauxUrgence'] > 20 ? 'var(--red)' : 'inherit' }}">
+                    {{ $indicateurs['urgences'] }}
+                </div>
+                <div class="l">Urgences détectées</div>
+                <div class="sous">{{ $indicateurs['tauxUrgence'] }} % des questionnaires</div>
+            </div>
+        </div>
+
+        @php $maxMois = max(1, collect($activiteMensuelle)->max('valeur')); @endphp
+        <h4 style="margin:26px 0 10px;font-size:.95rem;color:var(--muted)">Activité des six derniers mois</h4>
+        <div class="histo" role="img" aria-label="Rendez-vous par mois sur six mois">
+            @foreach ($activiteMensuelle as $m)
+                <div class="histo-col">
+                    <div class="histo-val">{{ $m['valeur'] }}</div>
+                    <div class="histo-bar" style="height:{{ max(4, round($m['valeur'] / $maxMois * 100)) }}%"></div>
+                    <div class="histo-lbl">{{ $m['libelle'] }}</div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+
+    <div class="panel">
+        <h3>Patients à rappeler <span class="pill b">Urgence détectée</span></h3>
+        <p class="panel-note">Le questionnaire de ces patients a franchi le seuil d'urgence : ils ont été renvoyés
+            vers les urgences plutôt que vers un rendez-vous. Un appel de suivi permet de vérifier leur prise en charge.</p>
+        @forelse ($patientsARisque as $q)
+            <div class="row-item">
+                <div class="ava" style="width:44px;height:44px;font-size:1rem;border-radius:12px;background:var(--red-pale);color:var(--red-dark)">
+                    {{ $q->niveau_urgence }}
+                </div>
+                <div class="grow">
+                    <h4>{{ $q->patient?->utilisateur?->fullName() ?? 'Visiteur non identifié' }}</h4>
+                    <div class="sub">
+                        Orientation proposée : {{ $q->specialite_resultat ?: 'urgences' }}
+                        · {{ $q->created_at->diffForHumans() }}
+                    </div>
+                </div>
+            </div>
+        @empty
+            <p style="color:var(--muted);margin:0">Aucune urgence détectée sur les trente derniers jours.</p>
+        @endforelse
+    </div>
+
     @php
         $totalRdv = collect($rdvParSpecialite)->sum('valeur');
         $rayon = 62;

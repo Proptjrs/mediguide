@@ -8,7 +8,7 @@ use App\Models\Questionnaire;
  * Cœur fonctionnel de MediGuide (mémoire, chap. 4.2.3).
  * - calculateUrgencyScore() : niveau déclaré pondéré + bonus signes d'alarme.
  *   Score >= 7  => mode URGENCE, redirection SAMU 15.
- * - determineSpecialty()   : arbre de décision problème + zone + profil.
+ * - determineSpecialty()   : arbre de décision difficulté + zone + profil.
  */
 class QuestionnaireService
 {
@@ -23,7 +23,7 @@ class QuestionnaireService
         'fievre_40' => 2,
     ];
 
-    /** Arbre de décision : problème principal -> zone anatomique -> spécialité. */
+    /** Arbre de décision : difficulté principale -> zone anatomique -> spécialité. */
     private const ARBRE = [
         'douleur' => [
             'poitrine' => 'Cardiologie',  'tete' => 'Neurologie',

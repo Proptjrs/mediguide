@@ -13,3 +13,5 @@
 # Captures et journaux produits par Dusk à chaque exécution
 /tests/Browser/screenshots
 /tests/Browser/console
+# Configuration locale de l'éditeur
+/.claude

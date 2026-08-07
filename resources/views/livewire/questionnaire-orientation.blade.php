@@ -4,11 +4,21 @@
 
     <div class="q-route" aria-hidden="true">
         <div class="trail" style="width:{{ ($etape - 1) / 4 * 100 }}%"></div>
-        @foreach ([1 => 'Localisation', 2 => 'Profil', 3 => 'Problème', 4 => 'Zone du corps', 5 => 'Urgence'] as $n => $lbl)
+        @foreach ([1 => 'Localisation', 2 => 'Profil', 3 => 'Difficulté', 4 => 'Zone du corps', 5 => 'Urgence'] as $n => $lbl)
             <div class="q-dot {{ $etape > $n ? 'done' : ($etape === $n ? 'now' : '') }}">
                 {{ $etape > $n ? '✓' : $n }}<span>{{ $lbl }}</span>
             </div>
         @endforeach
+    </div>
+
+    {{-- Beaucoup de patients du district lisent mal le français écrit : chaque
+         étape peut être écoutée au lieu d'être lue. --}}
+    <div style="display:flex;justify-content:center;margin-bottom:14px">
+        <button type="button" class="btn-voix" data-lire=".q-card" aria-pressed="false"
+                title="Lire cette étape à voix haute">
+            <svg viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+            <span class="libelle">Écouter</span>
+        </button>
     </div>
 
     <div class="q-card">
@@ -61,7 +71,7 @@
 
         @elseif ($etape === 3)
             <div class="q-step on">
-                <h2>Quel est votre problème principal ?</h2>
+                <h2>Quelle est votre difficulté principale ?</h2>
                 <p class="hint">Choisissez la catégorie la plus proche de ce que vous ressentez.</p>
                 <div class="choice-grid">
                     @foreach ([
@@ -159,4 +169,36 @@
             </button>
         </div>
     </div>
+
+    {{-- Sauvegarde locale : si la connexion tombe au milieu du questionnaire,
+         le patient retrouve ses réponses au lieu de tout ressaisir. --}}
+    <script>
+    (function () {
+        const CLE = 'mediguide.questionnaire';
+        const champs = () => document.querySelectorAll('.q-card input, .q-card select, .q-card textarea');
+
+        function conserver() {
+            const etat = {};
+            champs().forEach((c) => {
+                if (! c.id && ! c.name) return;
+                etat[c.id || c.name] = c.type === 'checkbox' ? c.checked : c.value;
+            });
+            try { localStorage.setItem(CLE, JSON.stringify({ etape: @js($etape), etat })); } catch (e) {}
+        }
+
+        function restaurer() {
+            let sauvegarde;
+            try { sauvegarde = JSON.parse(localStorage.getItem(CLE) || 'null'); } catch (e) { return; }
+            if (! sauvegarde || sauvegarde.etape !== @js($etape)) return;
+            champs().forEach((c) => {
+                const v = sauvegarde.etat[c.id || c.name];
+                if (v === undefined) return;
+                if (c.type === 'checkbox') { c.checked = v; } else if (! c.value) { c.value = v; }
+            });
+        }
+
+        document.addEventListener('input', (e) => { if (e.target.closest('.q-card')) conserver(); });
+        restaurer();
+    })();
+    </script>
 </div>

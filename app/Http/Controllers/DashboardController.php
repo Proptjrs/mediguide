@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Medecin, RendezVous, StructureMedicale, User};
+use App\Models\{Medecin, Questionnaire, RendezVous, StructureMedicale, User};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -33,6 +33,9 @@ class DashboardController extends Controller
                 'rdvSemaine' => RendezVous::whereBetween('date_heure',
                     [now()->startOfWeek(), now()->endOfWeek()])->count(),
                 'rdvParSpecialite' => $this->rdvParSpecialite(),
+                'indicateurs' => $this->indicateurs(),
+                'activiteMensuelle' => $this->activiteMensuelle(),
+                'patientsARisque' => $this->patientsARisque(),
             ]),
             default => view('dashboard.patient', [
                 'rdvs' => $user->patient?->rendezVous()
@@ -72,6 +75,69 @@ class DashboardController extends Controller
                 'couleur' => $couleurs[$i],
             ])
             ->all();
+    }
+
+    /**
+     * Indicateurs de pilotage sur les trente derniers jours : ils répondent aux
+     * questions que se pose la direction, et non au simple décompte d'objets.
+     */
+    private function indicateurs(): array
+    {
+        $depuis = now()->subDays(30);
+        $clos = RendezVous::where('date_heure', '>=', $depuis)
+            ->whereIn('statut', ['HONORE', 'NO_SHOW'])->count();
+        $manques = RendezVous::where('date_heure', '>=', $depuis)
+            ->where('statut', 'NO_SHOW')->count();
+        $questionnaires = Questionnaire::where('created_at', '>=', $depuis)->count();
+        $urgences = Questionnaire::where('created_at', '>=', $depuis)
+            ->where('urgence_detectee', true)->count();
+
+        return [
+            'rdvClos' => $clos,
+            'manques' => $manques,
+            'tauxManques' => $clos > 0 ? round($manques / $clos * 100) : 0,
+            'annulations' => RendezVous::where('date_heure', '>=', $depuis)
+                ->where('statut', 'ANNULE')->count(),
+            'questionnaires' => $questionnaires,
+            'urgences' => $urgences,
+            'tauxUrgence' => $questionnaires > 0 ? round($urgences / $questionnaires * 100) : 0,
+            'urgenceMoyenne' => round((float) Questionnaire::where('created_at', '>=', $depuis)
+                ->avg('niveau_urgence'), 1),
+        ];
+    }
+
+    /** Rendez-vous des six derniers mois, pour lire la tendance d'activité. */
+    private function activiteMensuelle(): array
+    {
+        $mois = collect(range(5, 0))->map(fn ($n) => now()->subMonths($n)->startOfMonth());
+
+        $comptes = RendezVous::query()
+            ->where('date_heure', '>=', $mois->first())
+            ->where('statut', '!=', 'ANNULE')
+            ->get(['date_heure'])
+            ->countBy(fn ($r) => $r->date_heure->format('Y-m'));
+
+        return $mois->map(fn ($m) => [
+            'libelle' => ucfirst($m->translatedFormat('M')),
+            'valeur' => (int) ($comptes[$m->format('Y-m')] ?? 0),
+        ])->all();
+    }
+
+    /**
+     * Patients dont le dernier questionnaire a déclenché une alerte d'urgence
+     * sans qu'un rendez-vous n'ait suivi : ce sont eux qu'il faut rappeler.
+     */
+    private function patientsARisque()
+    {
+        return Questionnaire::query()
+            ->with('patient.utilisateur')
+            ->where('urgence_detectee', true)
+            ->where('created_at', '>=', now()->subDays(30))
+            ->whereNotNull('patient_id')
+            ->latest()
+            ->get()
+            ->unique('patient_id')
+            ->take(8);
     }
 
     /** UC-A2 — validation d'un médecin par l'administrateur. */

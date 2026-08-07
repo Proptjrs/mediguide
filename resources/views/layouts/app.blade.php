@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ $title ?? 'MediGuide — Trouvez le bon médecin, au bon endroit, au bon moment' }}</title>
+{{-- Mode hors connexion : l'application s'installe et reste consultable
+     lorsque le réseau tombe, situation courante dans le district. --}}
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0284C7">
 {{-- Bootstrap 5.3 : imposé par la stack du mémoire (chap. 3.2.10 / section 1).
      Chargé AVANT le design system MediGuide pour que la charte de MediGuide_Demo.html
      (chap. 12) garde la priorité sur les classes homonymes de Bootstrap (.btn, .card…). --}}
@@ -374,6 +378,33 @@ select::-ms-expand{display:none}
 .kpi .n{font-family:var(--disp);font-weight:800;font-size:2.3rem;color:var(--text-dark)}
 .kpi .l{color:var(--muted);font-size:.88rem;margin-top:6px;font-weight:500}
 .kpi .tag{position:absolute;top:22px;right:22px;font-size:.72rem;font-weight:700;padding:5px 11px;border-radius:var(--r-pill);background:var(--green-pale);color:var(--green-dark)}
+/* Mention explicative sous un indicateur de pilotage. */
+.kpi .sous{margin-top:8px;font-size:.76rem;color:var(--muted);font-weight:500}
+.dash-grid.quatre{grid-template-columns:repeat(4,1fr);gap:16px}
+.dash-grid.quatre .kpi{padding:20px}
+.dash-grid.quatre .kpi .n{font-size:1.9rem}
+
+/* Histogramme d'activité du tableau de bord décisionnel. */
+.histo{display:flex;align-items:flex-end;gap:14px;height:150px;padding:8px 4px 0;border-bottom:1px solid var(--border-2)}
+.histo-col{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}
+.histo-val{font-size:.78rem;font-weight:700;color:var(--text-dark);margin-bottom:5px}
+.histo-bar{width:100%;max-width:54px;border-radius:8px 8px 0 0;background:var(--grad-primary);
+           box-shadow:0 4px 10px rgba(2,132,199,.2);transition:height .5s var(--ease)}
+.histo-lbl{margin-top:8px;font-size:.74rem;color:var(--muted);font-weight:600;text-transform:uppercase}
+
+/* Bouton de lecture à voix haute, pour les patients qui lisent mal. */
+.btn-voix{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border-2);background:var(--white);
+          color:var(--blue-dark);font-weight:600;font-size:.85rem;padding:8px 14px;border-radius:var(--r-pill);
+          cursor:pointer;transition:all .2s var(--ease)}
+.btn-voix:hover{background:var(--blue-pale);border-color:var(--blue)}
+.btn-voix[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn-voix svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.9}
+
+/* Bandeau affiché lorsque la connexion est perdue. */
+.bandeau-hors-ligne{position:fixed;left:0;right:0;bottom:0;z-index:80;display:none;gap:10px;align-items:center;
+                    justify-content:center;padding:11px 16px;background:#B45309;color:#fff;font-weight:600;
+                    font-size:.88rem}
+body.hors-ligne .bandeau-hors-ligne{display:flex}
 .panel{background:var(--white);border:1px solid var(--border-2);border-radius:var(--r-lg);padding:28px;margin-bottom:20px;box-shadow:var(--shadow-xs)}
 .panel h3{font-size:1.15rem;font-weight:700;color:var(--text-dark);margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
 .panel .panel-note{font-size:.86rem;color:var(--muted);margin:-8px 0 16px}
@@ -646,7 +677,27 @@ footer{background:var(--text-dark);color:#94A3B8;padding:56px 0 32px;margin-top:
 </div>
 @endif
 
+<div class="bandeau-hors-ligne" role="status">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M1 1l22 22M16.7 16.7A9 9 0 0 0 12 15c-1.7 0-3.3.5-4.6 1.3M5 12.5a13 13 0 0 1 3-1.9M19 12.5a13 13 0 0 0-3.3-2M2 8.8a17 17 0 0 1 5-2.7M22 8.8a17 17 0 0 0-9.6-2.7"/>
+        <circle cx="12" cy="20" r="1"/>
+    </svg>
+    <span>Vous êtes hors connexion. Vos réponses sont conservées sur cet appareil.</span>
+</div>
+
 @livewireScripts
+<script src="/js/accessibilite.js" defer></script>
+<script>
+// Mode hors connexion : enregistrement de l'agent de service et affichage du
+// bandeau dès que la connexion tombe.
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
+}
+const etatReseau = () => document.body.classList.toggle('hors-ligne', ! navigator.onLine);
+window.addEventListener('online', etatReseau);
+window.addEventListener('offline', etatReseau);
+etatReseau();
+</script>
 <script>
 // Compteur animé des statistiques de l'accueil (équivalent d'animCount() dans la
 // maquette) : progression cubique sur 1,3 s, déclenchée à l'entrée dans le viewport.

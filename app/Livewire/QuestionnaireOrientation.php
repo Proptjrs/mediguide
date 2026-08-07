@@ -20,7 +20,7 @@ class QuestionnaireOrientation extends Component
     public string $sexe = '';
     public string $antecedents = '';
 
-    // Étape 3 — problème principal
+    // Étape 3 — difficulté principale
     public string $probleme = '';
 
     // Étape 4 — zone du corps
@@ -45,7 +45,7 @@ class QuestionnaireOrientation extends Component
             4 => ['zone' => 'required'],
             default => ['niveauUrgence' => 'required|integer|min:1|max:10', 'signesAlarme' => 'array'],
         }, ['lat.required' => 'Indiquez votre position ou choisissez un quartier.',
-            'probleme.required' => 'Choisissez votre problème principal.',
+            'probleme.required' => 'Choisissez votre difficulté principale.',
             'zone.required' => 'Indiquez la zone concernée.']);
 
         if ($this->etape < 5) {
