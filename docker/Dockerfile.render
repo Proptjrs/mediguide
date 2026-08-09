@@ -1,0 +1,42 @@
+# Image de production, destinée à l'hébergeur Render.
+#
+# Render exécute un seul conteneur par service : contrairement à l'assemblage de
+# développement (php-fpm d'un côté, nginx de l'autre), le serveur web et PHP
+# tiennent ici dans la même image. Apache écoute sur le port que Render impose
+# par la variable PORT.
+FROM php:8.3-apache
+
+# pdo_pgsql : la base offerte par Render est une base PostgreSQL.
+# pdo_mysql : conservé pour que la même image tourne aussi sur MySQL.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        git unzip libzip-dev libpq-dev \
+    && docker-php-ext-install pdo_mysql pdo_pgsql zip \
+    && a2enmod rewrite \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Laravel sert tout depuis public/ : le reste du code ne doit pas être exposé.
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+RUN sed -ri 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
+        /etc/apache2/sites-available/000-default.conf /etc/apache2/apache2.conf \
+    && printf '<Directory /var/www/html/public>\n    AllowOverride All\n    Require all granted\n</Directory>\n' \
+        > /etc/apache2/conf-available/mediguide.conf \
+    && a2enconf mediguide
+
+WORKDIR /var/www/html
+
+# Les dépendances sont installées avant le code : tant que composer.json ne
+# change pas, cette couche est réutilisée et la reconstruction reste rapide.
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --no-interaction --prefer-dist --optimize-autoloader
+
+COPY . .
+RUN composer dump-autoload --optimize --no-dev \
+    && chown -R www-data:www-data storage bootstrap/cache
+
+COPY docker/render-entrypoint.sh /usr/local/bin/render-entrypoint.sh
+RUN chmod +x /usr/local/bin/render-entrypoint.sh
+
+ENTRYPOINT ["render-entrypoint.sh"]
+CMD ["apache2-foreground"]

@@ -1,0 +1,80 @@
+# Déploiement de MediGuide sur Render.
+#
+# Ce fichier décrit l'infrastructure : Render le lit, crée le service web et la
+# base de données, et les relie. Aucun réglage n'est à reprendre à la main,
+# hormis les deux secrets marqués « sync: false », qui se saisissent dans le
+# tableau de bord et ne figurent donc jamais dans le dépôt.
+
+databases:
+  - name: mediguide-db
+    databaseName: mediguide
+    user: mediguide
+    plan: free
+    region: frankfurt
+
+services:
+  - type: web
+    name: mediguide
+    runtime: docker
+    dockerfilePath: ./docker/Dockerfile.render
+    plan: free
+    region: frankfurt
+    healthCheckPath: /
+    envVars:
+      - key: APP_NAME
+        value: MediGuide
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+
+      # Clé de chiffrement des données médicales. À saisir une seule fois dans
+      # le tableau de bord : la changer rendrait illisibles les antécédents,
+      # les allergies et les prescriptions déjà enregistrés.
+      - key: APP_KEY
+        sync: false
+
+      # Adresse publique du service, renseignée automatiquement par Render.
+      - key: APP_URL
+        fromService:
+          type: web
+          name: mediguide
+          property: hostport
+
+      # Connexion à la base PostgreSQL créée ci-dessus.
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase: { name: mediguide-db, property: host }
+      - key: DB_PORT
+        fromDatabase: { name: mediguide-db, property: port }
+      - key: DB_DATABASE
+        fromDatabase: { name: mediguide-db, property: database }
+      - key: DB_USERNAME
+        fromDatabase: { name: mediguide-db, property: user }
+      - key: DB_PASSWORD
+        fromDatabase: { name: mediguide-db, property: password }
+
+      # Sessions, cache et file d'attente passent par la base : le plan gratuit
+      # ne comporte ni Redis ni second conteneur.
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: sync
+
+      # Envoi des courriers électroniques. Les identifiants du fournisseur se
+      # saisissent dans le tableau de bord.
+      - key: MAIL_MAILER
+        value: log
+      - key: MAIL_FROM_ADDRESS
+        value: notifications@mediguide.sn
+      - key: MAIL_FROM_NAME
+        value: MediGuide
+
+      # Services cartographiques publics.
+      - key: OSRM_URL
+        value: https://router.project-osrm.org
+      - key: NOMINATIM_URL
+        value: https://nominatim.openstreetmap.org
