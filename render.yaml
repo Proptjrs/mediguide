@@ -34,6 +34,14 @@ services:
       - key: APP_KEY
         sync: false
 
+      # Mot de passe des trois comptes de démonstration. Il doit être déclaré
+      # ici, et non ajouté seul dans le tableau de bord : les variables d'un
+      # service piloté par Blueprint sont réécrites à chaque synchronisation, et
+      # une variable absente de ce fichier disparaît. « sync: false » signifie
+      # que la valeur, elle, ne vient pas du dépôt mais du tableau de bord.
+      - key: DEMO_PASSWORD
+        sync: false
+
       # Adresse publique du service, renseignée automatiquement par Render.
       - key: APP_URL
         fromService:
