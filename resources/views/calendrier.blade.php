@@ -15,15 +15,6 @@
 
     @error('creneau') <div class="field-error" style="margin-top:16px">{{ $message }}</div> @enderror
 
-    @guest
-        <div class="panel" style="margin-top:20px;background:var(--blue-pale-2);border-color:var(--blue-pale)">
-            <p style="margin:0;font-size:.93rem;color:var(--text)">
-                Vous consultez les créneaux librement. La connexion sera demandée au moment de réserver —
-                <a href="{{ route('login') }}" style="color:var(--blue-dark);font-weight:600">se connecter</a>
-                ou <a href="{{ route('register') }}" style="color:var(--blue-dark);font-weight:600">créer un compte</a>.
-            </p>
-        </div>
-    @endguest
 
     <div class="cal-week">
         <a class="wk-btn" href="{{ route('calendrier', [$medecin, 'semaine' => $lundi->copy()->subWeek()->toDateString()]) }}" aria-label="Semaine précédente">‹</a>
@@ -48,7 +39,7 @@
                                     <button class="slot free">{{ $c['heure'] }} · Libre</button>
                                 </form>
                             @else
-                                {{-- Visiteur : la connexion est demandée au moment de réserver. --}}
+                                {{-- Créneau déjà pris ou hors planning. --}}
                                 <a href="{{ route('login') }}" class="slot free" style="display:block">{{ $c['heure'] }} · Libre</a>
                             @endauth
                         @else

@@ -5,18 +5,22 @@
  * garde donc en mémoire les pages publiques déjà consultées et les affiche
  * telles quelles lorsque le réseau tombe, plutôt qu'une erreur du navigateur.
  *
- * IMPORTANT — rien de personnel n'est mis en cache. Les espaces connectés
- * (dossier médical, agenda, administration) ne sont jamais conservés sur
- * l'appareil : sur un téléphone partagé, une page de dossier médical restée
- * en mémoire serait consultable par n'importe qui, hors connexion et sans
- * mot de passe. Seules les pages ouvertes à tous sont mémorisées.
+ * IMPORTANT — rien de personnel n'est mis en cache. Les pages consultées une
+ * fois connecté — agenda, rendez-vous, administration — ne sont jamais
+ * conservées sur l'appareil : sur un téléphone partagé, une page restée en
+ * mémoire serait consultable par n'importe qui, hors connexion et sans mot de
+ * passe. Seules les pages ouvertes à tous sont mémorisées.
  */
-const CACHE = 'mediguide-v2';
+const CACHE = 'mediguide-v3';
 const HORS_LIGNE = '/hors-ligne.html';
 const SOCLE = [HORS_LIGNE, '/js/accessibilite.js', '/favicon.ico'];
 
-/** Pages publiques : aucune donnée personnelle ne s'y affiche. */
-const PAGES_PUBLIQUES = ['/', '/orientation', '/resultats', '/urgence'];
+/** Pages publiques : aucune donnée personnelle ne s'y affiche.
+ *
+ * Depuis que le parcours d'orientation exige une connexion, seules la page
+ * d'accueil et la page de repli restent ouvertes à tous : ce sont donc les
+ * seules à pouvoir être conservées sur l'appareil. */
+const PAGES_PUBLIQUES = ['/'];
 
 /** Ressources statiques, identiques pour tous les visiteurs. */
 const EXTENSIONS = /\.(css|js|png|jpe?g|svg|webp|ico|woff2?)$/i;

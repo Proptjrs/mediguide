@@ -7,16 +7,22 @@ use App\Http\Controllers\Medecin\IndisponibiliteController;
 use App\Livewire\QuestionnaireOrientation;
 use Illuminate\Support\Facades\Route;
 
-/* ---- Public ----
- | Comme sur les plateformes du même type, on peut s'orienter et consulter les
- | structures sans compte : la connexion n'est exigée qu'au moment de réserver,
- | car c'est là que le patient engage sa venue. */
+/* ---- Page d'accueil ----
+ | Seule page ouverte à tous : elle présente la plateforme et conduit à
+ | l'inscription ou à la connexion. */
 Route::get('/', [OrientationController::class, 'accueil'])->name('accueil');
-Route::get('/orientation', QuestionnaireOrientation::class)->name('orientation');        // F1
-Route::get('/urgence', [OrientationController::class, 'urgence'])->name('urgence');     // F2
-Route::get('/resultats', [OrientationController::class, 'resultats'])->name('resultats'); // F3
-Route::get('/medecin/{medecin}/calendrier', [RendezVousController::class, 'calendrier'])
-    ->name('calendrier');                                                                 // F4
+
+/* ---- Parcours d'orientation ----
+ | L'accès à la plateforme suppose une identification préalable : le
+ | questionnaire, les structures proposées et les créneaux d'un médecin ne sont
+ | consultables qu'une fois connecté. */
+Route::middleware('auth')->group(function () {
+    Route::get('/orientation', QuestionnaireOrientation::class)->name('orientation');      // F1
+    Route::get('/urgence', [OrientationController::class, 'urgence'])->name('urgence');    // F2
+    Route::get('/resultats', [OrientationController::class, 'resultats'])->name('resultats'); // F3
+    Route::get('/medecin/{medecin}/calendrier', [RendezVousController::class, 'calendrier'])
+        ->name('calendrier');                                                              // F4
+});
 
 /* ---- Authentification (chap. 4.2.2) ---- */
 Route::middleware('guest')->group(function () {

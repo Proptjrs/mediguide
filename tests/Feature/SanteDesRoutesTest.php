@@ -78,7 +78,8 @@ class SanteDesRoutesTest extends TestCase
 
     public function test_les_espaces_prives_sont_fermes_au_visiteur(): void
     {
-        foreach (['/dashboard', '/profil', '/admin/structures', '/admin/utilisateurs'] as $url) {
+        foreach (['/dashboard', '/profil', '/orientation', '/resultats', '/urgence',
+                  '/admin/structures', '/admin/utilisateurs'] as $url) {
             $this->get($url)->assertRedirect();
         }
     }

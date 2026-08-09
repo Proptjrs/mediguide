@@ -51,7 +51,7 @@
           </svg>
           <div class="entry-side">
             <p class="entry-hint" x-show="!zone">Sélectionnez une zone pour voir la spécialité correspondante.
-              @guest La connexion ne sera demandée qu'au moment de réserver. @endguest</p>
+              @guest Connectez-vous pour lancer le questionnaire complet. @endguest</p>
             <div class="entry-result" :class="{show: zone}" x-cloak>
               <div class="lbl">Orientation indicative</div>
               <div class="spec" x-text="labels[zone]"></div>
