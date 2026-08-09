@@ -17,6 +17,13 @@ if [ -z "${APP_KEY}" ]; then
     exit 1
 fi
 
+# Le manifeste des paquets est reconstruit à chaque démarrage : un manifeste
+# hérité d'une image précédente peut désigner un paquet qui n'est plus installé,
+# et l'application refuse alors de démarrer.
+rm -f bootstrap/cache/packages.php bootstrap/cache/services.php \
+      bootstrap/cache/config.php bootstrap/cache/routes-*.php
+php artisan package:discover --ansi
+
 # Mise à jour du schéma, puis mise en cache de la configuration et des routes.
 php artisan migrate --force
 php artisan config:cache

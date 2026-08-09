@@ -6,12 +6,19 @@
     "require": {
         "php": "^8.2",
         "laravel/framework": "^11.0",
+        "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.0",
         "laravel/sanctum": "^4.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^11.0",
-        "laravel/dusk": "^8.0"
+        "fakerphp/faker": "^1.23",
+        "laravel/dusk": "^8.0",
+        "laravel/pail": "^1.1",
+        "laravel/pint": "^1.13",
+        "laravel/sail": "^1.26",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.0",
+        "phpunit/phpunit": "^11.0"
     },
     "autoload": {
         "psr-4": {

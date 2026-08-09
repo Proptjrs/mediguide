@@ -1,0 +1,24 @@
+# Ce qui ne doit jamais entrer dans l'image de production.
+#
+# Les secrets d'abord : un .env recopié dans l'image y resterait lisible par
+# quiconque obtient l'image, alors que la configuration doit venir du serveur.
+.env
+.env.*
+!.env.example
+
+# Reconstruits pendant la construction de l'image.
+/vendor
+/node_modules
+/bootstrap/cache/*.php
+
+# Sans objet en production.
+/tests
+/storage/logs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/.git
+/.github
+/.claude
+/.phpunit.cache
+.phpunit.result.cache
