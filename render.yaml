@@ -28,6 +28,15 @@ services:
       - key: APP_DEBUG
         value: false
 
+      # Sans cette locale, les noms de jours et de mois du calendrier de prise
+      # de rendez-vous s'affichent en anglais.
+      - key: APP_LOCALE
+        value: fr
+      - key: APP_FALLBACK_LOCALE
+        value: fr
+      - key: APP_TIMEZONE
+        value: UTC
+
       # Clé de chiffrement des données médicales. À saisir une seule fois dans
       # le tableau de bord : la changer rendrait illisibles les antécédents,
       # les allergies et les prescriptions déjà enregistrés.
