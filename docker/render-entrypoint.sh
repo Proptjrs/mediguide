@@ -24,8 +24,11 @@ rm -f bootstrap/cache/packages.php bootstrap/cache/services.php \
       bootstrap/cache/config.php bootstrap/cache/routes-*.php
 php artisan package:discover --ansi
 
-# Mise à jour du schéma, puis mise en cache de la configuration et des routes.
+# Mise à jour du schéma, puis peuplement du référentiel du district. Le semis
+# s'interrompt de lui-même si les données sont déjà là : il peut donc être
+# rejoué à chaque démarrage sans rien dupliquer.
 php artisan migrate --force
+php artisan db:seed --force
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
