@@ -56,4 +56,33 @@ class RendezVousController extends Controller
 
         return back()->with('ok', 'Rendez-vous annulé.');
     }
+
+    /**
+     * Clôture d'un rendez-vous par le médecin qui l'a reçu.
+     *
+     * Le rendez-vous a deux fins possibles : le patient s'est présenté, ou il
+     * ne s'est pas présenté. La distinction alimente l'indicateur des
+     * rendez-vous manqués du tableau de bord de l'administration.
+     */
+    public function clore(RendezVous $rendezVous, Request $request, string $issue)
+    {
+        abort_unless($request->user()->medecin?->id === $rendezVous->medecin_id, 403);
+        abort_unless($rendezVous->statut === 'CONFIRME', 409);
+
+        $rendezVous->update(['statut' => $issue]);
+
+        return back()->with('ok', $issue === 'HONORE'
+            ? 'Rendez-vous marqué comme honoré.'
+            : 'Rendez-vous marqué comme non honoré.');
+    }
+
+    public function honorer(RendezVous $rendezVous, Request $request)
+    {
+        return $this->clore($rendezVous, $request, 'HONORE');
+    }
+
+    public function absent(RendezVous $rendezVous, Request $request)
+    {
+        return $this->clore($rendezVous, $request, 'NO_SHOW');
+    }
 }

@@ -30,7 +30,6 @@ class GestionComptesTest extends TestCase
         $u = User::where('email', 'awa.creee@gmail.com')->firstOrFail();
         $this->assertSame('patient', $u->role);
         $this->assertNotNull($u->email_verified_at, 'Un compte créé par l\'admin est déjà confirmé.');
-        $this->assertNotNull($u->patient?->dossier, 'Le dossier médical doit être créé d\'office.');
     }
 
     /** Un médecin ne se crée pas côté admin : il s'inscrit puis est validé. */

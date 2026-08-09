@@ -61,8 +61,8 @@
 
     @if ($patient)
         <div class="panel">
-            <h3>Mon dossier médical <span class="pill b">Visible par mes médecins traitants</span></h3>
-            <form method="POST" action="{{ route('profil.dossier') }}">
+            <h3>Mes renseignements de santé <span class="pill b">Visibles de moi seul</span></h3>
+            <form method="POST" action="{{ route('profil.sante') }}">
                 @csrf @method('PUT')
                 <div class="grid2">
                     <div class="field">
@@ -74,12 +74,8 @@
                         <input name="allergies" value="{{ old('allergies', $patient->allergies) }}" placeholder="Pénicilline…">
                     </div>
                 </div>
-                <div class="field">
-                    <label>Antécédents médicaux</label>
-                    <textarea name="antecedents" rows="3" placeholder="Diabète, hypertension…">{{ old('antecedents', $patient->dossier?->antecedents) }}</textarea>
-                </div>
                 <div style="display:flex;justify-content:flex-end">
-                    <button class="btn btn-primary btn-sm">Enregistrer le dossier</button>
+                    <button class="btn btn-primary btn-sm">Enregistrer</button>
                 </div>
             </form>
         </div>

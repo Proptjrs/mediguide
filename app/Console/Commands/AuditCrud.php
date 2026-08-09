@@ -1,6 +1,6 @@
 <?php
 namespace App\Console\Commands;
-use App\Models\{Consultation, Disponibilite, DossierPatient, Medecin, Patient, RendezVous, Specialite, StructureMedicale, User};
+use App\Models\{Disponibilite, Medecin, Patient, RendezVous, Specialite, StructureMedicale, User};
 use App\Services\RdvService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\{DB, Notification};
@@ -46,10 +46,8 @@ class AuditCrud extends Command {
             $up = User::create(['nom'=>'AUDIT','prenom'=>'Pat','role'=>'patient','email'=>'audit.pat@t.sn','password'=>'password']);
             $p = Patient::create(['utilisateur_id'=>$up->id]);
             $this->ok('patients', 'Create', $p->exists);
-            $dp = DossierPatient::create(['patient_id'=>$p->id,'antecedents'=>'RAS']);
-            $this->ok('dossiers_patients', 'Create', $dp->exists);
-            $dp->update(['antecedents'=>'Diabete']);
-            $this->ok('dossiers_patients', 'Update', DossierPatient::find($dp->id)->antecedents === 'Diabete');
+            $p->update(['allergies'=>'Penicilline']);
+            $this->ok('patients', 'Update (allergies chiffrees)', Patient::find($p->id)->allergies === 'Penicilline');
 
             $creneau = now()->addDays(2)->setTime(9, 0);
             $r = $rdv->creerRendezVous($p, $m, $creneau);
@@ -61,10 +59,8 @@ class AuditCrud extends Command {
             $this->ok('rendez_vous', 'Update (ANNULE)', RendezVous::find($r->id)->statut === 'ANNULE');
 
             $r2 = $rdv->creerRendezVous($p, $m, now()->addDays(3)->setTime(9, 0));
-            $c = Consultation::create(['rendez_vous_id'=>$r2->id,'medecin_id'=>$m->id,'patient_id'=>$p->id,'observations'=>'Examen normal','prescription'=>'Repos']);
-            $this->ok('consultations', 'Create', $c->exists);
             $r2->update(['statut'=>'HONORE']);
-            $this->ok('consultations', 'RDV passe a HONORE', RendezVous::find($r2->id)->statut === 'HONORE');
+            $this->ok('rendez_vous', 'Cloture par le medecin (HONORE)', RendezVous::find($r2->id)->statut === 'HONORE');
 
             $up->notify(new \App\Notifications\RdvConfirme($r2));
             $this->ok('notifications', 'Canal database + mail', true);
@@ -72,8 +68,6 @@ class AuditCrud extends Command {
             $creneaux = $rdv->creneauxSemaine($m, now()->startOfWeek());
             $this->ok('disponibilites', 'Creneaux = base - RDV - indispos', is_array($creneaux) && count($creneaux) === 5);
 
-            $c->delete();       $this->ok('consultations', 'Delete', Consultation::find($c->id) === null);
-            $dp->delete();      $this->ok('dossiers_patients', 'Delete', DossierPatient::find($dp->id) === null);
             $i->delete();       $this->ok('disponibilites', 'Delete', Disponibilite::find($i->id) === null);
             RendezVous::whereIn('id', [$r->id, $r2->id])->delete();
             $this->ok('rendez_vous', 'Delete', RendezVous::find($r->id) === null);

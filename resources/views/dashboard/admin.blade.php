@@ -192,10 +192,5 @@
         <a href="{{ route('admin.structures.index') }}" class="btn btn-outline btn-sm">Gérer les structures</a>
     </div>
 
-    <div class="panel">
-        <h3>Dossiers patients <span class="pill b">Accès superviseur</span></h3>
-        <p class="panel-note">Consulter n'importe quel dossier patient à des fins de support et d'audit (chap. 4.2.7 du mémoire) — lecture seule.</p>
-        <a href="{{ route('admin.dossiers.index') }}" class="btn btn-outline btn-sm">Rechercher un dossier</a>
-    </div>
 </div>
 @endsection

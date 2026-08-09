@@ -78,8 +78,7 @@ class SanteDesRoutesTest extends TestCase
 
     public function test_les_espaces_prives_sont_fermes_au_visiteur(): void
     {
-        foreach (['/dashboard', '/profil', '/admin/structures', '/admin/utilisateurs',
-                  '/admin/dossiers'] as $url) {
+        foreach (['/dashboard', '/profil', '/admin/structures', '/admin/utilisateurs'] as $url) {
             $this->get($url)->assertRedirect();
         }
     }
@@ -88,7 +87,7 @@ class SanteDesRoutesTest extends TestCase
     {
         $patient = $this->comptes()['patient'];
 
-        foreach (['/admin/structures', '/admin/utilisateurs', '/admin/dossiers'] as $url) {
+        foreach (['/admin/structures', '/admin/utilisateurs'] as $url) {
             $reponse = $this->actingAs($patient)->get($url);
             $this->assertContains($reponse->getStatusCode(), [302, 403],
                 "{$url} devrait être refusée au patient, reçu {$reponse->getStatusCode()}");

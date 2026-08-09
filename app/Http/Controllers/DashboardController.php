@@ -42,10 +42,6 @@ class DashboardController extends Controller
                     ->with('medecin.utilisateur', 'medecin.structure', 'medecin.specialite')
                     ->where('date_heure', '>=', now())->where('statut', 'CONFIRME')
                     ->orderBy('date_heure')->get() ?? collect(),
-                'dossier' => $user->patient?->dossier,
-                'consultations' => $user->patient?->consultations()
-                    ->with('medecin.utilisateur', 'medecin.specialite')
-                    ->whereNotNull('prescription')->latest()->get() ?? collect(),
                 'notifications' => $user->notifications()->latest()->take(5)->get(),
             ]),
         };

@@ -58,7 +58,7 @@ class ProfilController extends Controller
         return back()->with('ok', 'Profil mis à jour.');
     }
 
-    /** Champs propres au dossier patient (groupe sanguin, allergies). */
+    /** Renseignements de santé du profil : groupe sanguin et allergies. */
     public function updatePatient(Request $request)
     {
         $patient = $request->user()->patient;
@@ -67,7 +67,6 @@ class ProfilController extends Controller
         $data = $request->validate([
             'groupe_sanguin' => 'nullable|string|max:5',
             'allergies' => 'nullable|string|max:500',
-            'antecedents' => 'nullable|string|max:2000',
         ]);
 
         DB::transaction(function () use ($patient, $data) {
@@ -75,10 +74,9 @@ class ProfilController extends Controller
                 'groupe_sanguin' => $data['groupe_sanguin'] ?? null,
                 'allergies' => $data['allergies'] ?? null,
             ]);
-            $patient->dossier?->update(['antecedents' => $data['antecedents'] ?? null]);
         });
 
-        return back()->with('ok', 'Dossier médical mis à jour.');
+        return back()->with('ok', 'Renseignements de santé mis à jour.');
     }
 
     public function updatePassword(Request $request)

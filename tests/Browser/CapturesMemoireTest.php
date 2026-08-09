@@ -2,7 +2,7 @@
 
 namespace Tests\Browser;
 
-use App\Models\{DossierPatient, Medecin, StructureMedicale, User};
+use App\Models\{Medecin, StructureMedicale, User};
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
@@ -87,16 +87,11 @@ class CapturesMemoireTest extends DuskTestCase
     {
         $medecin = User::where('email', config('mediguide.demo.medecin'))->firstOrFail();
         $patient = User::where('email', config('mediguide.demo.patient'))->firstOrFail();
-        $dossier = DossierPatient::whereHas('patient', fn ($q) => $q->where('utilisateur_id', $patient->id))->first();
 
-        $this->browse(function (Browser $b) use ($medecin, $dossier) {
+        $this->browse(function (Browser $b) use ($medecin) {
             $b->loginAs($medecin);
             $this->prendre($b, '/dashboard', '12-agenda-medecin', 'Mon agenda');
             $this->prendre($b, '/profil', '13-profil-medecin', 'Mon profil');
-
-            if ($dossier) {
-                $this->prendre($b, "/medecin/dossier/{$dossier->id}", '14-dossier-patient', 'Informations médicales');
-            }
         });
     }
 
@@ -117,7 +112,6 @@ class CapturesMemoireTest extends DuskTestCase
             $this->prendre($b, '/admin/utilisateurs/creer', '20-admin-utilisateur-creer', 'ompte');
             $this->prendre($b, "/admin/utilisateurs/{$patient->id}/modifier", '21-admin-utilisateur-modifier', 'ompte');
             $this->prendre($b, "/admin/medecin/{$medecin->id}/planning", '22-admin-planning', 'Planning de consultation');
-            $this->prendre($b, '/admin/dossiers', '23-admin-dossiers', 'dossier patient');
             $this->prendreZone($b, '/dashboard', '24-admin-pilotage', 'Administration', 'Pilotage');
             $this->prendreZone($b, '/dashboard', '25-admin-patients-risque', 'Administration',
                 'Patients à rappeler');

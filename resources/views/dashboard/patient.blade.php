@@ -4,7 +4,7 @@
 <div class="wrap dash-shell">
     <span class="session-chip"><svg><use href="#i-check"/></svg>Connecté — {{ auth()->user()->fullName() }}</span>
     <h2 class="k-title">Mon espace patient</h2>
-    <p class="k-sub" style="margin-bottom:28px">Vos rendez-vous et votre dossier médical, au même endroit.</p>
+    <p class="k-sub" style="margin-bottom:28px">Vos rendez-vous et vos notifications, au même endroit.</p>
 
     <div class="dash-grid">
         <div class="kpi">
@@ -14,9 +14,9 @@
         </div>
         <div class="kpi">
             <div class="ic"><svg><use href="#i-shield"/></svg></div>
-            <div class="n">{{ $dossier ? 1 : 0 }}</div>
-            <div class="l">Dossier médical sécurisé</div>
-            @if ($dossier) <span class="tag">Chiffré</span> @endif
+            <div class="n">{{ auth()->user()->patient?->allergies ? 'Oui' : '—' }}</div>
+            <div class="l">Allergies renseignées</div>
+            @if (auth()->user()->patient?->allergies) <span class="tag">Chiffré</span> @endif
         </div>
         <div class="kpi">
             <div class="ic"><svg><use href="#i-target"/></svg></div>
@@ -67,34 +67,5 @@
         @endforelse
     </div>
 
-    <div class="panel">
-        <h3>Mon dossier médical <span class="pill b">Accès personnel uniquement</span></h3>
-        @if ($dossier)
-            <div class="row-item"><svg style="width:18px;height:18px;stroke:var(--red)"><use href="#i-heart"/></svg>
-                <div class="grow"><h4>Groupe sanguin</h4><div class="sub">{{ auth()->user()->patient->groupe_sanguin ?? 'Non renseigné' }}</div></div></div>
-            <div class="row-item"><svg style="width:18px;height:18px;stroke:var(--amber)"><use href="#i-alert"/></svg>
-                <div class="grow"><h4>Allergies</h4><div class="sub">{{ auth()->user()->patient->allergies ?? 'Aucune connue' }}</div></div></div>
-            <div class="row-item"><svg style="width:18px;height:18px;stroke:var(--blue)"><use href="#i-doc"/></svg>
-                <div class="grow"><h4>Antécédents</h4><div class="sub">{{ $dossier->antecedents ?? 'RAS' }}</div></div></div>
-        @else
-            <p style="color:var(--muted);margin:0">Dossier en cours de création.</p>
-        @endif
-    </div>
-
-    <div class="panel">
-        <h3>Mes ordonnances</h3>
-        @forelse ($consultations as $c)
-            <div class="row-item">
-                <svg style="width:18px;height:18px;stroke:var(--blue)"><use href="#i-doc"/></svg>
-                <div class="grow">
-                    <h4>Ordonnance — {{ $c->created_at->translatedFormat('j F Y') }}</h4>
-                    <div class="sub">Dr. {{ $c->medecin->utilisateur->fullName() }} · {{ $c->medecin->specialite->nom }}</div>
-                </div>
-                <a href="{{ route('consultation.ordonnance', $c) }}" class="btn btn-outline btn-sm">Ouvrir</a>
-            </div>
-        @empty
-            <p style="color:var(--muted);margin:0">Aucune ordonnance pour le moment.</p>
-        @endforelse
-    </div>
 </div>
 @endsection

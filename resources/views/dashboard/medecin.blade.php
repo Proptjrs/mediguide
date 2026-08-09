@@ -16,7 +16,7 @@
         <div class="kpi">
             <div class="ic"><svg><use href="#i-doc"/></svg></div>
             <div class="n">{{ $rdvsJour->where('statut', 'CONFIRME')->count() }}</div>
-            <div class="l">Comptes-rendus à rédiger</div>
+            <div class="l">Rendez-vous à clore</div>
         </div>
         <div class="kpi">
             <div class="ic"><svg><use href="#i-alert"/></svg></div>
@@ -28,32 +28,22 @@
     <div class="panel">
         <h3>Agenda du jour</h3>
         @forelse ($rdvsJour as $rdv)
-            <div x-data="{ open:false }">
-                <div class="row-item">
-                    <span class="pill b">{{ $rdv->date_heure->format('H:i') }}</span>
-                    <div class="grow">
-                        <h4>{{ $rdv->patient->utilisateur->fullName() }}</h4>
-                        <div class="sub">{{ $rdv->motif ?? 'Consultation' }} · Dossier : {{ $rdv->patient->dossier?->antecedents ?? 'RAS' }}</div>
-                    </div>
-                    <span class="pill {{ $rdv->statut === 'CONFIRME' ? 'o' : ($rdv->statut === 'HONORE' ? 'g' : 'r') }}">{{ $rdv->statut }}</span>
-                    @if ($rdv->patient->dossier)
-                        <a href="{{ route('medecin.dossier', $rdv->patient->dossier) }}" class="btn btn-outline btn-sm">Dossier</a>
-                    @endif
-                    @if ($rdv->statut === 'CONFIRME')
-                        <button type="button" class="btn btn-outline btn-sm" @click="open = !open">Compte-rendu</button>
-                    @endif
+            <div class="row-item">
+                <span class="pill b">{{ $rdv->date_heure->format('H:i') }}</span>
+                <div class="grow">
+                    <h4>{{ $rdv->patient->utilisateur->fullName() }}</h4>
+                    <div class="sub">{{ $rdv->motif ?? 'Consultation' }}</div>
                 </div>
+                <span class="pill {{ $rdv->statut === 'CONFIRME' ? 'o' : ($rdv->statut === 'HONORE' ? 'g' : 'r') }}">{{ $rdv->statut }}</span>
                 @if ($rdv->statut === 'CONFIRME')
-                    <div x-show="open" x-cloak style="margin:-8px 0 14px">
-                        <form method="POST" action="{{ route('consultation.store', $rdv) }}" style="background:var(--bg);border-radius:var(--r);padding:20px">
-                            @csrf
-                            <div class="field"><label>Observations</label>
-                                <textarea name="observations" rows="3" required minlength="10" placeholder="Examen clinique, diagnostic…"></textarea></div>
-                            <div class="field"><label>Prescription (facultatif)</label>
-                                <textarea name="prescription" rows="2"></textarea></div>
-                            <button class="btn btn-primary btn-sm">Enregistrer au dossier → statut HONORÉ</button>
-                        </form>
-                    </div>
+                    <form method="POST" action="{{ route('rdv.honorer', $rdv) }}">
+                        @csrf @method('PATCH')
+                        <button class="btn btn-outline btn-sm">Patient reçu</button>
+                    </form>
+                    <form method="POST" action="{{ route('rdv.absent', $rdv) }}">
+                        @csrf @method('PATCH')
+                        <button class="btn btn-outline btn-sm">Absent</button>
+                    </form>
                 @endif
             </div>
         @empty

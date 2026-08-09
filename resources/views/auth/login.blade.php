@@ -7,10 +7,10 @@
       <div class="auth-side">
         <div>
           <h3>Un espace pour chaque acteur du parcours de soin.</h3>
-          <p>MediGuide connecte patients, médecins et administrateurs autour d'un même dossier sécurisé — chiffrement et accès par rôle (chap. 4.2.2 / 4.2.7 du mémoire).</p>
+          <p>MediGuide réunit patients, médecins et administrateurs sur une même plateforme : chaque rôle n'accède qu'à ce qui le concerne.</p>
           <div class="auth-role-list">
             <div class="auth-role-btn"><svg><use href="#i-heart"/></svg><span>Patient<small>S'orienter et prendre rendez-vous</small></span></div>
-            <div class="auth-role-btn"><svg><use href="#i-kit"/></svg><span>Médecin<small>Consulter son agenda et les dossiers</small></span></div>
+            <div class="auth-role-btn"><svg><use href="#i-kit"/></svg><span>Médecin<small>Consulter son agenda et ses patients</small></span></div>
             <div class="auth-role-btn"><svg><use href="#i-shield"/></svg><span>Administrateur<small>Gérer structures, comptes et plannings</small></span></div>
           </div>
         </div>

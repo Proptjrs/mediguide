@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{DossierPatient, Patient, User};
+use App\Models\{Patient, User};
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -64,7 +64,6 @@ class UtilisateurController extends Controller
 
             if ($user->role === 'patient') {
                 $patient = Patient::create(['utilisateur_id' => $user->id]);
-                DossierPatient::create(['patient_id' => $patient->id]);
             }
 
             return $user;
@@ -132,7 +131,6 @@ class UtilisateurController extends Controller
         $nom = $utilisateur->fullName();
 
         DB::transaction(function () use ($utilisateur) {
-            $utilisateur->patient?->dossier?->delete();
             $utilisateur->patient?->delete();
             $utilisateur->medecin?->delete();
             $utilisateur->delete();

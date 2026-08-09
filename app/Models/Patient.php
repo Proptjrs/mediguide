@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
 class Patient extends Model
 {
@@ -18,6 +18,4 @@ class Patient extends Model
 
     public function utilisateur(): BelongsTo     { return $this->belongsTo(User::class, 'utilisateur_id'); }
     public function rendezVous(): HasMany        { return $this->hasMany(RendezVous::class); }
-    public function dossier(): HasOne            { return $this->hasOne(DossierPatient::class); }
-    public function consultations(): HasMany     { return $this->hasMany(Consultation::class); }
 }

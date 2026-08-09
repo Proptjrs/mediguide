@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{DossierPatient, Medecin, Patient, Specialite, StructureMedicale, User};
+use App\Models\{Medecin, Patient, Specialite, StructureMedicale, User};
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -73,7 +73,6 @@ class AuthController extends Controller
                 'date_naissance' => $data['date_naissance'] ?? null,
                 'sexe' => $data['sexe'] ?? null,
             ]);
-            DossierPatient::create(['patient_id' => $patient->id]);   // F6 : dossier créé d'office
 
             return $user;
         });

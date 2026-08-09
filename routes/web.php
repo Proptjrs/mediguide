@@ -1,9 +1,8 @@
 <?php
 
-use App\Http\Controllers\{AuthController, ConsultationController, DashboardController,
-    MotDePasseOublieController, OrientationController, ProfilController, RendezVousController};
-use App\Http\Controllers\Admin\{DossierController, PlanningController, StructureController, UtilisateurController};
-use App\Http\Controllers\Medecin\DossierController as MedecinDossierController;
+use App\Http\Controllers\{AuthController, DashboardController, MotDePasseOublieController,
+    OrientationController, ProfilController, RendezVousController};
+use App\Http\Controllers\Admin\{PlanningController, StructureController, UtilisateurController};
 use App\Http\Controllers\Medecin\IndisponibiliteController;
 use App\Livewire\QuestionnaireOrientation;
 use Illuminate\Support\Facades\Route;
@@ -11,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 /* ---- Public ----
  | Comme sur les plateformes du même type, on peut s'orienter et consulter les
  | structures sans compte : la connexion n'est exigée qu'au moment de réserver,
- | car c'est là qu'un dossier patient est engagé. */
+ | car c'est là que le patient engage sa venue. */
 Route::get('/', [OrientationController::class, 'accueil'])->name('accueil');
 Route::get('/orientation', QuestionnaireOrientation::class)->name('orientation');        // F1
 Route::get('/urgence', [OrientationController::class, 'urgence'])->name('urgence');     // F2
@@ -66,18 +65,21 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::put('/profil/dossier', [ProfilController::class, 'updatePatient'])
-        ->middleware('role:patient')->name('profil.dossier');
+    // Renseignements de santé du patient : ils appartiennent à son profil et
+    // ne sont visibles que de lui.
+    Route::put('/profil/sante', [ProfilController::class, 'updatePatient'])
+        ->middleware('role:patient')->name('profil.sante');
 
     Route::post('/medecin/{medecin}/reserver', [RendezVousController::class, 'reserver'])
         ->middleware('role:patient')->name('rdv.reserver');                              // F4
     Route::delete('/rdv/{rendezVous}/annuler', [RendezVousController::class, 'annuler'])
         ->middleware('role:patient')->name('rdv.annuler');
 
-    Route::post('/rdv/{rendezVous}/consultation', [ConsultationController::class, 'store'])
-        ->middleware('role:medecin')->name('consultation.store');                        // F9
-    Route::get('/consultation/{consultation}/ordonnance', [ConsultationController::class, 'ordonnance'])
-        ->name('consultation.ordonnance');
+    // Clôture du rendez-vous par le médecin : présent ou non présenté.
+    Route::patch('/rdv/{rendezVous}/honorer', [RendezVousController::class, 'honorer'])
+        ->middleware('role:medecin')->name('rdv.honorer');
+    Route::patch('/rdv/{rendezVous}/absent', [RendezVousController::class, 'absent'])
+        ->middleware('role:medecin')->name('rdv.absent');
 
     Route::post('/admin/medecin/{medecin}/valider', [DashboardController::class, 'validerMedecin'])
         ->middleware('role:admin')->name('admin.valider');                               // UC-A2
@@ -97,9 +99,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('utilisateurs.activation');
         Route::delete('/utilisateurs/{utilisateur}', [UtilisateurController::class, 'destroy'])->name('utilisateurs.destroy');
 
-        Route::get('/dossiers', [DossierController::class, 'index'])->name('dossiers.index');
-        Route::get('/dossiers/{dossier}', [DossierController::class, 'show'])->name('dossiers.show');
-
         // Gestion des structures médicales référencées (chap. 2)
         Route::get('/structures', [StructureController::class, 'index'])->name('structures.index');
         Route::get('/structures/creer', [StructureController::class, 'create'])->name('structures.create');
@@ -111,10 +110,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Indisponibilités ponctuelles : déclarées par le médecin (exceptions au planning de base)
     Route::middleware('role:medecin')->prefix('medecin')->name('medecin.')->group(function () {
-        // Dossier d'un patient : autorisé par DossierPolicy uniquement si un
-        // rendez-vous CONFIRME ou HONORE lie ce médecin à ce patient (chap. 2).
-        Route::get('/dossier/{dossier}', [MedecinDossierController::class, 'show'])->name('dossier');
-
         Route::post('/indisponibilite', [IndisponibiliteController::class, 'store'])->name('indisponibilite.store');
         Route::delete('/indisponibilite/{disponibilite}', [IndisponibiliteController::class, 'destroy'])
             ->name('indisponibilite.destroy');

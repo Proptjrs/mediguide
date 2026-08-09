@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\{Disponibilite, DossierPatient, Medecin, Patient, Specialite, StructureMedicale, User};
+use App\Models\{Disponibilite, Medecin, Patient, Specialite, StructureMedicale, User};
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -96,9 +96,8 @@ class DatabaseSeeder extends Seeder
         $up = User::create(['nom' => 'GUEYE', 'prenom' => 'Samba', 'role' => 'patient',
             'email' => config('mediguide.demo.patient'), 'password' => config('mediguide.demo.mot_de_passe'),
             'email_verified_at' => now()]);
-        $p = Patient::create(['utilisateur_id' => $up->id, 'sexe' => 'M',
+        Patient::create(['utilisateur_id' => $up->id, 'sexe' => 'M',
             'date_naissance' => '2002-12-26', 'groupe_sanguin' => 'O+']);
-        DossierPatient::create(['patient_id' => $p->id, 'antecedents' => 'RAS']);
 
         User::create(['nom' => 'ADMIN', 'prenom' => 'ISI', 'role' => 'admin',
             'email' => config('mediguide.demo.admin'), 'password' => config('mediguide.demo.mot_de_passe'),
@@ -110,7 +109,7 @@ class DatabaseSeeder extends Seeder
 
     /**
      * Sur une adresse publique, le mot de passe de démonstration par défaut
-     * ouvrirait l'administration — donc tous les dossiers médicaux — à qui
+     * ouvrirait l'administration de la plateforme à qui
      * connaît la valeur, c'est-à-dire à quiconque lit le dépôt. Hors
      * développement, le semis exige donc un mot de passe choisi.
      */
