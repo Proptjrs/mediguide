@@ -1,13 +1,11 @@
 <?php
 
 use App\Http\Middleware\{CheckRole, EmpecherMiseEnCache};
-use App\Models\DossierPatient;
-use App\Policies\DossierPolicy;
 use Illuminate\Foundation\Application;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Notifications\{ResetPassword, VerifyEmail};
 use Illuminate\Foundation\Configuration\{Exceptions, Middleware};
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Support\Facades\Gate;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -25,11 +23,18 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('web', EmpecherMiseEnCache::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Sans ce message, le visiteur qui ouvre le questionnaire se retrouve sur
+        // la page de connexion sans savoir ce qui s'est passé.
+        $exceptions->render(function (AuthenticationException $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Authentification requise.'], 401);
+            }
+
+            return redirect()->guest(route('login'))
+                ->with('erreur', 'Connectez-vous pour accéder à cette page.');
+        });
     })
     ->booted(function () {
-        Gate::policy(DossierPatient::class, DossierPolicy::class); // chap. 4.2.7
-
         // E-mail de réinitialisation du mot de passe, en français.
         ResetPassword::toMailUsing(function (object $notifiable, string $token) {
             return (new MailMessage)

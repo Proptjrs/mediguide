@@ -470,6 +470,7 @@ footer{background:var(--text-dark);color:#94A3B8;padding:56px 0 32px;margin-top:
 
 /* ====== TOAST (messages flash) ====== */
 .toast-wrap{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:4000;display:flex;flex-direction:column;gap:10px;align-items:center;max-width:92vw}
+.toast-wrap .toast{display:flex}
 .toast{background:var(--text-dark);color:#fff;padding:15px 24px;border-radius:var(--r-pill);display:flex;gap:12px;align-items:center;font-size:.92rem;font-weight:500;box-shadow:0 16px 36px rgba(0,0,0,.28)}
 .toast svg{width:18px;height:18px;stroke:var(--green);flex:none;stroke-width:2.2}
 .toast.err svg{stroke:var(--red)}
