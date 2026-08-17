@@ -81,12 +81,28 @@ services:
       - key: QUEUE_CONNECTION
         value: sync
 
-      # Envoi des courriers électroniques. Les identifiants du fournisseur se
-      # saisissent dans le tableau de bord.
+      # Envoi des courriers électroniques.
+      #
+      # Les confirmations et les rappels doivent partir en production comme en
+      # développement : le canal est donc SMTP, et non plus le journal. Les
+      # identifiants ne figurent pas ici — « sync: false » signifie qu'ils sont
+      # saisis à la main dans le tableau de bord de l'hébergeur, et qu'aucune
+      # synchronisation ne les écrasera. Tant qu'ils ne sont pas renseignés,
+      # l'envoi échoue sans interrompre la plateforme.
       - key: MAIL_MAILER
-        value: log
+        value: smtp
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_ENCRYPTION
+        sync: false
       - key: MAIL_FROM_ADDRESS
-        value: notifications@mediguide.sn
+        sync: false
       - key: MAIL_FROM_NAME
         value: MediGuide
 

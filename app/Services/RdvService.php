@@ -6,6 +6,7 @@ use App\Models\{Disponibilite, Medecin, Patient, RendezVous};
 use App\Notifications\RdvConfirme;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Gestion des rendez-vous (mémoire, chap. 4.2.5) :
@@ -89,8 +90,18 @@ class RdvService
                 'motif' => $motif,
             ]);
 
-            // F5 : confirmation SMS + e-mail, envoyée hors transaction via la queue
-            DB::afterCommit(fn () => $patient->utilisateur->notify(new RdvConfirme($rdv)));
+            // F5 : confirmation SMS + courriel, envoyée une fois la transaction
+            // validée. Une panne du serveur d'envoi — identifiants absents,
+            // fournisseur injoignable — ne doit pas annuler un rendez-vous déjà
+            // pris : l'échec est journalisé, la réservation tient.
+            DB::afterCommit(function () use ($patient, $rdv) {
+                try {
+                    $patient->utilisateur->notify(new RdvConfirme($rdv));
+                } catch (\Throwable $e) {
+                    Log::warning('Confirmation non envoyée pour le rendez-vous ' . $rdv->id
+                        . ' : ' . $e->getMessage());
+                }
+            });
 
             return $rdv;
         });
