@@ -17,5 +17,6 @@ class Medecin extends Model
     public function structure(): BelongsTo      { return $this->belongsTo(StructureMedicale::class, 'structure_id'); }
     public function specialite(): BelongsTo     { return $this->belongsTo(Specialite::class); }
     public function disponibilites(): HasMany   { return $this->hasMany(Disponibilite::class); }
+    public function secretaires(): HasMany      { return $this->hasMany(Secretaire::class, 'medecin_id'); }
     public function rendezVous(): HasMany       { return $this->hasMany(RendezVous::class); }
 }

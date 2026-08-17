@@ -14,6 +14,9 @@ class DashboardController extends Controller
         $user = $request->user();
 
         return match ($user->role) {
+            // La secrétaire n'a pas de tableau de bord distinct : son travail
+            // est l'agenda du médecin qu'elle assiste, elle y va directement.
+            'secretaire' => redirect()->route('secretaire.agenda'),
             'medecin' => view('dashboard.medecin', [
                 'rdvsJour' => $user->medecin->rendezVous()
                     ->with('patient.utilisateur')->whereDate('date_heure', today())

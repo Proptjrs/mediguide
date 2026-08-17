@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\{Disponibilite, Medecin, Patient, Specialite, StructureMedicale, User};
+use App\Models\{Disponibilite, Medecin, Patient, Secretaire, Specialite, StructureMedicale, User};
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -102,6 +102,12 @@ class DatabaseSeeder extends Seeder
         User::create(['nom' => 'ADMIN', 'prenom' => 'ISI', 'role' => 'admin',
             'email' => config('mediguide.demo.admin'), 'password' => config('mediguide.demo.mot_de_passe'),
             'email_verified_at' => now()]);
+
+        // La secrétaire du premier médecin : c'est elle qui tient son agenda.
+        $us = User::create(['nom' => 'SARR', 'prenom' => 'Fatou', 'role' => 'secretaire',
+            'email' => 'secretaire@mediguide.sn', 'password' => config('mediguide.demo.mot_de_passe'),
+            'email_verified_at' => now()]);
+        Secretaire::create(['utilisateur_id' => $us->id, 'medecin_id' => $premierMedecin->id]);
 
         // Le compte medecin@demo.sn est déjà créé plus haut (Dr Moussa DIALLO,
         // premier de la liste des médecins), avec son planning et sa validation.

@@ -400,6 +400,24 @@ select::-ms-expand{display:none}
 .btn-voix[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
 .btn-voix svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.9}
 
+/* ---- Assistant conversationnel ---- */
+.chat-fil{display:flex;flex-direction:column;gap:12px;max-height:52vh;overflow-y:auto;padding:4px 2px 10px}
+.chat-ligne{display:flex}
+.chat-ligne.patient{justify-content:flex-end}
+.chat-bulle{max-width:78%;padding:11px 15px;border-radius:14px;line-height:1.5;
+  background:var(--blue-pale-2);border:1px solid var(--border-2);color:var(--text)}
+.chat-ligne.patient .chat-bulle{background:var(--blue);border-color:var(--blue);color:#fff}
+/* Une réponse d'urgence ne doit pas ressembler aux autres. */
+.chat-bulle.alerte{background:var(--red-pale);border-color:var(--red);color:var(--text-dark)}
+.chat-pistes{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+.chat-piste{border:1px solid var(--border);background:var(--white);color:var(--blue-deep);
+  border-radius:999px;padding:7px 14px;font-size:.92rem;cursor:pointer}
+.chat-piste:hover{background:var(--blue-pale);border-color:var(--blue)}
+.chat-saisie{display:flex;gap:10px;margin-top:14px}
+.chat-saisie input{flex:1;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:1rem}
+.chat-saisie input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-pale)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
 /* Bandeau affiché lorsque la connexion est perdue. */
 .bandeau-hors-ligne{position:fixed;left:0;right:0;bottom:0;z-index:80;display:none;gap:10px;align-items:center;
                     justify-content:center;padding:11px 16px;background:#B45309;color:#fff;font-weight:600;
@@ -565,6 +583,7 @@ footer{background:var(--text-dark);color:#94A3B8;padding:56px 0 32px;margin-top:
   <symbol id="i-kit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M9 8V6a2 2 0 012-2h2a2 2 0 012 2v2M12 12v4M10 14h4"/></symbol>
   <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 12h16M14 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".7" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-5.4A8 8 0 0 1 13 4a8 8 0 0 1 8 8z"/><path d="M8.5 11h7M8.5 14.5h4"/></symbol>
   <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1a6 6 0 016-6"/><circle cx="17" cy="9" r="2.4"/><path d="M14 20v-1a5 5 0 016 0"/></symbol>
   <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 018 0v3.5"/></symbol>
   <symbol id="i-bone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 17L17 7"/><circle cx="6" cy="18" r="2.6"/><circle cx="18" cy="6" r="2.6"/></symbol>
@@ -588,11 +607,15 @@ footer{background:var(--text-dark);color:#94A3B8;padding:56px 0 32px;margin-top:
         @if (auth()->user()->role === 'patient')
           <a class="nav-link {{ request()->routeIs('accueil') ? 'on' : '' }}" href="{{ route('accueil') }}"><svg><use href="#i-compass"/></svg>Accueil</a>
           <a class="nav-link {{ request()->routeIs('orientation') ? 'on' : '' }}" href="{{ route('orientation') }}"><svg><use href="#i-target"/></svg>Orientation</a>
+          <a class="nav-link {{ request()->routeIs('assistant') ? 'on' : '' }}" href="{{ route('assistant') }}"><svg><use href="#i-chat"/></svg>Assistant</a>
           <a class="nav-link {{ request()->routeIs('resultats') ? 'on' : '' }}" href="{{ route('resultats') }}"><svg><use href="#i-pin"/></svg>Structures</a>
           <a class="nav-link {{ request()->routeIs('dashboard') ? 'on' : '' }}" href="{{ route('dashboard') }}"><svg><use href="#i-cal"/></svg>Mes rendez-vous</a>
         @elseif (auth()->user()->role === 'medecin')
           <a class="nav-link {{ request()->routeIs('accueil') ? 'on' : '' }}" href="{{ route('accueil') }}"><svg><use href="#i-compass"/></svg>Accueil</a>
           <a class="nav-link {{ request()->routeIs('dashboard') ? 'on' : '' }}" href="{{ route('dashboard') }}"><svg><use href="#i-cal"/></svg>Mon agenda</a>
+        @elseif (auth()->user()->role === 'secretaire')
+          <a class="nav-link {{ request()->routeIs('accueil') ? 'on' : '' }}" href="{{ route('accueil') }}"><svg><use href="#i-compass"/></svg>Accueil</a>
+          <a class="nav-link {{ request()->routeIs('secretaire.agenda') ? 'on' : '' }}" href="{{ route('secretaire.agenda') }}"><svg><use href="#i-cal"/></svg>Agenda du médecin</a>
         @else
           <a class="nav-link {{ request()->routeIs('accueil') ? 'on' : '' }}" href="{{ route('accueil') }}"><svg><use href="#i-compass"/></svg>Accueil</a>
           <a class="nav-link {{ request()->routeIs('dashboard') ? 'on' : '' }}" href="{{ route('dashboard') }}"><svg><use href="#i-shield"/></svg>Administration</a>
