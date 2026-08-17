@@ -18,6 +18,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias(['role' => CheckRole::class]);          // chap. 4.2.2
         $middleware->redirectGuestsTo('/connexion');
 
+        // Chez l'hébergeur, le chiffrement TLS s'arrête à son répartiteur, qui
+        // transmet ensuite la requête en clair au conteneur. Sans cette ligne,
+        // l'application croit avoir été appelée en HTTP et fabrique des
+        // redirections « http:// » — un visiteur renvoyé vers la page de
+        // connexion quitterait alors la liaison chiffrée.
+        $middleware->trustProxies(at: '*');
+
         // Toutes les pages web portent un formulaire avec jeton CSRF : on interdit
         // leur mise en cache pour éviter les « 419 Page Expired » sur jeton périmé.
         $middleware->appendToGroup('web', EmpecherMiseEnCache::class);
