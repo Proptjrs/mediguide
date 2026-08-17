@@ -24,7 +24,8 @@ class User extends Authenticatable implements MustVerifyEmail
         return ['password' => 'hashed', 'actif' => 'boolean', 'email_verified_at' => 'datetime'];
     }
 
-    public function patient(): HasOne  { return $this->hasOne(Patient::class, 'utilisateur_id'); }
-    public function medecin(): HasOne  { return $this->hasOne(Medecin::class, 'utilisateur_id'); }
-    public function fullName(): string { return "{$this->prenom} {$this->nom}"; }
+    public function patient(): HasOne    { return $this->hasOne(Patient::class, 'utilisateur_id'); }
+    public function medecin(): HasOne    { return $this->hasOne(Medecin::class, 'utilisateur_id'); }
+    public function secretaire(): HasOne { return $this->hasOne(Secretaire::class, 'utilisateur_id'); }
+    public function fullName(): string   { return "{$this->prenom} {$this->nom}"; }
 }

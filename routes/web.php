@@ -4,6 +4,8 @@ use App\Http\Controllers\{AuthController, DashboardController, MotDePasseOublieC
     OrientationController, ProfilController, RendezVousController};
 use App\Http\Controllers\Admin\{PlanningController, StructureController, UtilisateurController};
 use App\Http\Controllers\Medecin\IndisponibiliteController;
+use App\Http\Controllers\Secretaire\AgendaController;
+use App\Livewire\AssistantMedical;
 use App\Livewire\QuestionnaireOrientation;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +24,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/resultats', [OrientationController::class, 'resultats'])->name('resultats'); // F3
     Route::get('/medecin/{medecin}/calendrier', [RendezVousController::class, 'calendrier'])
         ->name('calendrier');                                                              // F4
+
+    // Assistant conversationnel : il oriente à partir d'une phrase libre, pour
+    // le patient qui n'entre pas dans le questionnaire pas à pas.
+    Route::get('/assistant', AssistantMedical::class)->name('assistant');                  // F8
 });
 
 /* ---- Authentification (chap. 4.2.2) ---- */
@@ -118,6 +124,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:medecin')->prefix('medecin')->name('medecin.')->group(function () {
         Route::post('/indisponibilite', [IndisponibiliteController::class, 'store'])->name('indisponibilite.store');
         Route::delete('/indisponibilite/{disponibilite}', [IndisponibiliteController::class, 'destroy'])
+            ->name('indisponibilite.destroy');
+    });
+
+    // La secrétaire tient l'agenda du médecin qu'elle assiste : elle déclare ses
+    // absences et libère ses créneaux, sans accéder aux comptes ni aux structures.
+    Route::middleware('role:secretaire')->prefix('secretaire')->name('secretaire.')->group(function () {
+        Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda');
+        Route::post('/indisponibilite', [AgendaController::class, 'store'])->name('indisponibilite.store');
+        Route::delete('/indisponibilite/{disponibilite}', [AgendaController::class, 'destroy'])
             ->name('indisponibilite.destroy');
     });
 });
