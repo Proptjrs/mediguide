@@ -89,17 +89,22 @@ services:
       # saisis à la main dans le tableau de bord de l'hébergeur, et qu'aucune
       # synchronisation ne les écrasera. Tant qu'ils ne sont pas renseignés,
       # l'envoi échoue sans interrompre la plateforme.
+      # Ce qui n'est pas un secret est écrit ici, et se pose tout seul au
+      # déploiement : le serveur d'envoi, son port, le chiffrement.
       - key: MAIL_MAILER
         value: smtp
       - key: MAIL_HOST
-        sync: false
+        value: smtp.gmail.com
       - key: MAIL_PORT
-        sync: false
+        value: "587"
+      - key: MAIL_ENCRYPTION
+        value: tls
+      # Ces deux-là seulement sont saisies à la main dans le tableau de bord :
+      # l'adresse de l'expéditeur et son mot de passe d'application n'ont pas à
+      # figurer dans un dépôt public.
       - key: MAIL_USERNAME
         sync: false
       - key: MAIL_PASSWORD
-        sync: false
-      - key: MAIL_ENCRYPTION
         sync: false
       - key: MAIL_FROM_ADDRESS
         sync: false
