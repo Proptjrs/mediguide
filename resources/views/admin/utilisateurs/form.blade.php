@@ -47,13 +47,31 @@
                 @unless ($edition)
                     <div class="field">
                         <label>Rôle</label>
-                        <select name="role" required>
+                        <select name="role" required
+                                onchange="document.getElementById('bloc-medecin').hidden = this.value !== 'secretaire'">
                             <option value="patient" {{ old('role') === 'patient' ? 'selected' : '' }}>Patient</option>
+                            <option value="secretaire" {{ old('role') === 'secretaire' ? 'selected' : '' }}>Secrétaire médicale</option>
                             <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Administrateur</option>
                         </select>
                         <p class="field-error" style="color:var(--muted);font-weight:500">
                             Un médecin ne se crée pas ici : il s'inscrit lui-même avec son n° d'Ordre, que vous validez ensuite.</p>
                         @error('role') <div class="field-error">{{ $message }}</div> @enderror
+                    </div>
+
+                    {{-- Une secrétaire tient l'agenda d'un médecin : sans ce
+                         rattachement, son espace serait vide. Le bloc n'apparaît
+                         donc que pour ce rôle. --}}
+                    <div class="field" id="bloc-medecin" {{ old('role') === 'secretaire' ? '' : 'hidden' }}>
+                        <label>Médecin assisté</label>
+                        <select name="medecin_id">
+                            <option value="">— choisir —</option>
+                            @foreach ($medecins as $m)
+                                <option value="{{ $m->id }}" {{ old('medecin_id') === $m->id ? 'selected' : '' }}>
+                                    D<sup>r</sup> {{ $m->utilisateur->fullName() }} — {{ $m->specialite->nom }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('medecin_id') <div class="field-error">{{ $message }}</div> @enderror
                     </div>
                 @endunless
             </div>

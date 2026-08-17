@@ -103,4 +103,34 @@ class SecretaireAgendaTest extends TestCase
 
         $this->actingAs($orpheline)->get(route('secretaire.agenda'))->assertForbidden();
     }
+
+    public function test_l_administrateur_cree_une_secretaire_rattachee_a_un_medecin(): void
+    {
+        $medecin = $this->medecin();
+        $admin = User::create(['nom' => 'ADMIN', 'prenom' => 'ISI', 'role' => 'admin',
+            'email' => 'a@t.sn', 'password' => 'password', 'email_verified_at' => now()]);
+
+        $this->actingAs($admin)->post('/admin/utilisateurs', [
+            'prenom' => 'Fatou', 'nom' => 'SARR', 'email' => 'fatou.sarr.mediguide@gmail.com',
+            'role' => 'secretaire', 'medecin_id' => $medecin->id, 'password' => 'motdepasse1',
+        ])->assertRedirect(route('admin.utilisateurs.index'));
+
+        $creee = User::where('email', 'fatou.sarr.mediguide@gmail.com')->first();
+        $this->assertSame('secretaire', $creee->role);
+        $this->assertSame($medecin->id, $creee->secretaire->medecin_id);
+    }
+
+    public function test_une_secretaire_sans_medecin_est_refusee_a_la_creation(): void
+    {
+        $this->medecin();
+        $admin = User::create(['nom' => 'ADMIN', 'prenom' => 'ISI', 'role' => 'admin',
+            'email' => 'a2@t.sn', 'password' => 'password', 'email_verified_at' => now()]);
+
+        $this->actingAs($admin)->post('/admin/utilisateurs', [
+            'prenom' => 'Awa', 'nom' => 'NDIAYE', 'email' => 'awa.ndiaye.mediguide@gmail.com',
+            'role' => 'secretaire', 'password' => 'motdepasse1',
+        ])->assertSessionHasErrors('medecin_id');
+
+        $this->assertDatabaseMissing('users', ['email' => 'awa.ndiaye.mediguide@gmail.com']);
+    }
 }

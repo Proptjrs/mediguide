@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Patient, User};
+use App\Models\{Medecin, Patient, Secretaire, User};
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +18,9 @@ use Illuminate\Validation\Rule;
  *  - médecin : libre-service + validation du n° d'Ordre par l'admin ;
  *  - admin   : jamais en libre-service — créé par le seeder puis par un autre
  *              admin depuis cet écran. C'est pourquoi il n'existe aucune page
- *              publique d'inscription administrateur.
+ *              publique d'inscription administrateur ;
+ *  - secrétaire : créée ici également, et rattachée au médecin qu'elle assiste.
+ *              Sans ce rattachement son espace n'aurait aucun agenda à tenir.
  */
 class UtilisateurController extends Controller
 {
@@ -40,7 +42,18 @@ class UtilisateurController extends Controller
 
     public function create()
     {
-        return view('admin.utilisateurs.form', ['utilisateur' => new User()]);
+        return view('admin.utilisateurs.form', [
+            'utilisateur' => new User(),
+            'medecins' => $this->medecinsValides(),
+        ]);
+    }
+
+    /** Les médecins auxquels une secrétaire peut être rattachée. */
+    private function medecinsValides()
+    {
+        return Medecin::with('utilisateur', 'specialite')
+            ->where('valide', true)->get()
+            ->sortBy(fn ($m) => $m->utilisateur->nom);
     }
 
     /**
@@ -55,15 +68,29 @@ class UtilisateurController extends Controller
             'nom' => 'required|string|max:100',
             'email' => 'required|email:rfc,dns|unique:users,email',
             'telephone' => 'nullable|string|max:30',
-            'role' => 'required|in:patient,admin',
+            'role' => 'required|in:patient,admin,secretaire',
+            // Une secrétaire sans médecin n'aurait pas d'agenda : le champ est
+            // donc exigé, mais seulement pour ce rôle.
+            'medecin_id' => 'required_if:role,secretaire|nullable|exists:medecins,id',
             'password' => 'required|min:8',
+        ], [
+            'medecin_id.required_if' => 'Indiquez le médecin que cette secrétaire assiste.',
         ]);
 
         $user = DB::transaction(function () use ($data) {
-            $user = User::create([...$data, 'email_verified_at' => now()]);
+            $user = User::create([
+                ...collect($data)->except('medecin_id')->all(),
+                'email_verified_at' => now(),
+            ]);
 
             if ($user->role === 'patient') {
-                $patient = Patient::create(['utilisateur_id' => $user->id]);
+                Patient::create(['utilisateur_id' => $user->id]);
+            }
+            if ($user->role === 'secretaire') {
+                Secretaire::create([
+                    'utilisateur_id' => $user->id,
+                    'medecin_id' => $data['medecin_id'],
+                ]);
             }
 
             return $user;
@@ -75,7 +102,10 @@ class UtilisateurController extends Controller
 
     public function edit(User $utilisateur)
     {
-        return view('admin.utilisateurs.form', ['utilisateur' => $utilisateur]);
+        return view('admin.utilisateurs.form', [
+            'utilisateur' => $utilisateur,
+            'medecins' => $this->medecinsValides(),
+        ]);
     }
 
     public function update(Request $request, User $utilisateur)
