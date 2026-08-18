@@ -27,6 +27,7 @@ return [
         'patient' => env('DEMO_PATIENT_EMAIL') ?: 'patient@demo.sn',
         'medecin' => env('DEMO_MEDECIN_EMAIL') ?: 'medecin@demo.sn',
         'admin' => env('DEMO_ADMIN_EMAIL') ?: 'admin@demo.sn',
+        'secretaire' => env('DEMO_SECRETAIRE_EMAIL') ?: 'secretaire@demo.sn',
         'mot_de_passe' => env('DEMO_PASSWORD') ?: 'password',
     ],
 
