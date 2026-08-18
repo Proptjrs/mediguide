@@ -7,11 +7,12 @@
       <div class="auth-side">
         <div>
           <h3>Un espace pour chaque acteur du parcours de soin.</h3>
-          <p>MediGuide réunit patients, médecins et administrateurs sur une même plateforme : chaque rôle n'accède qu'à ce qui le concerne.</p>
+          <p>MediGuide réunit patients, médecins, secrétariats et administrateurs sur une même plateforme : chaque rôle n'accède qu'à ce qui le concerne.</p>
           <div class="auth-role-list">
             <div class="auth-role-btn"><svg><use href="#i-heart"/></svg><span>Patient<small>S'orienter et prendre rendez-vous</small></span></div>
             <div class="auth-role-btn"><svg><use href="#i-kit"/></svg><span>Médecin<small>Consulter son agenda et ses patients</small></span></div>
-            <div class="auth-role-btn"><svg><use href="#i-shield"/></svg><span>Administrateur<small>Gérer structures, comptes et plannings</small></span></div>
+            <div class="auth-role-btn"><svg><use href="#i-cal"/></svg><span>Secrétariat<small>Tenir l'agenda du médecin</small></span></div>
+            <div class="auth-role-btn"><svg><use href="#i-shield"/></svg><span>Administrateur<small>Structures, comptes et plannings</small></span></div>
           </div>
         </div>
         <p style="font-size:.78rem;color:#7DD3FC;margin-top:24px">Pas encore de compte ? <a href="{{ route('register') }}" style="color:#BAE6FD;font-weight:700;text-decoration:underline">Créez-en un en une minute</a> — la confirmation se fait par e-mail.</p>

@@ -4,7 +4,7 @@
 <div class="wrap dash-shell">
     <span class="session-chip"><svg><use href="#i-check"/></svg>Connecté — {{ auth()->user()->fullName() }}</span>
     <h2 class="k-title">Administration</h2>
-    <p class="k-sub" style="margin-bottom:28px">Vue d'ensemble de la plateforme et gestion des plannings.</p>
+    <p class="k-sub" style="margin-bottom:28px">Vue d'ensemble de la plateforme, des comptes et des plannings de consultation.</p>
 
     <div class="dash-grid">
         <div class="kpi">
@@ -160,7 +160,7 @@
     </div>
 
     <div class="panel">
-        <h3>Plannings de consultation <span class="pill b">Géré par l'administration</span></h3>
+        <h3>Plannings de consultation <span class="pill b">Fixé par l'administration</span></h3>
         <p class="panel-note">L'administration établit les plages de consultation de chaque médecin de la structure.
             Les créneaux proposés aux patients en découlent, déduction faite des rendez-vous pris et des indisponibilités déclarées.</p>
         @forelse ($medecins as $m)
@@ -172,7 +172,7 @@
                     <h4>{{ $m->utilisateur->fullName() }}</h4>
                     <div class="sub">{{ $m->specialite->nom }} · {{ $m->structure->nom }}</div>
                 </div>
-                <a href="{{ route('admin.planning.edit', $m) }}" class="btn btn-outline btn-sm">Gérer le planning</a>
+                <a href="{{ route('admin.planning.edit', $m) }}" class="btn btn-outline btn-sm">Modifier le planning</a>
             </div>
         @empty
             <p style="color:var(--muted);margin:0">Aucun médecin validé.</p>
@@ -183,13 +183,13 @@
         <h3>Comptes utilisateurs <span class="pill b">{{ $nbComptes }} comptes</span></h3>
         <p class="panel-note">Créer, modifier, suspendre ou supprimer un compte. Un patient s'inscrit seul ;
             un médecin s'inscrit puis attend la validation de son n° d'Ordre ; un administrateur ne se crée qu'ici.</p>
-        <a href="{{ route('admin.utilisateurs.index') }}" class="btn btn-outline btn-sm">Gérer les comptes</a>
+        <a href="{{ route('admin.utilisateurs.index') }}" class="btn btn-outline btn-sm">Ouvrir les comptes</a>
     </div>
 
     <div class="panel">
         <h3>Structures médicales <span class="pill b">{{ $nbStructures }} référencées</span></h3>
         <p class="panel-note">Ajouter, modifier ou retirer une structure du district. Les coordonnées GPS peuvent être déduites de l'adresse par géocodage OpenStreetMap.</p>
-        <a href="{{ route('admin.structures.index') }}" class="btn btn-outline btn-sm">Gérer les structures</a>
+        <a href="{{ route('admin.structures.index') }}" class="btn btn-outline btn-sm">Ouvrir les structures</a>
     </div>
 
 </div>
