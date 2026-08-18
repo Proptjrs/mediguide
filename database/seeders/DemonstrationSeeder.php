@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\{Medecin, Patient, Questionnaire, RendezVous, User};
+use App\Models\{Medecin, Patient, Questionnaire, RendezVous, Secretaire, User};
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 
@@ -38,6 +38,7 @@ class DemonstrationSeeder extends Seeder
             return;
         }
 
+        $this->secretaire($medecins->first());
         $patients = $this->patients();
         $this->command->info(sprintf('  %d patients de démonstration', $patients->count()));
 
@@ -115,6 +116,21 @@ class DemonstrationSeeder extends Seeder
         $this->command->info(sprintf(
             '  %d honorés · %d non honorés · %d annulés · %d à venir · 47 questionnaires dont %d urgents',
             $honores, $absents, $annules, $aVenir, $urgents));
+    }
+
+    /** La secrétaire du premier médecin, si elle n'existe pas déjà. */
+    private function secretaire(Medecin $medecin): void
+    {
+        if (User::where('email', 'secretaire@mediguide.sn')->exists()) {
+            return;
+        }
+        $u = User::create([
+            'nom' => 'SARR', 'prenom' => 'Fatou', 'role' => 'secretaire',
+            'email' => 'secretaire@mediguide.sn',
+            'password' => config('mediguide.demo.mot_de_passe'), 'email_verified_at' => now(),
+        ]);
+        Secretaire::create(['utilisateur_id' => $u->id, 'medecin_id' => $medecin->id]);
+        $this->command->info('  secrétariat créé : secretaire@mediguide.sn');
     }
 
     /** Quelques patients, créés une seule fois. */

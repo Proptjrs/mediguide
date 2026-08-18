@@ -29,6 +29,15 @@ php artisan package:discover --ansi
 # rejoué à chaque démarrage sans rien dupliquer.
 php artisan migrate --force
 php artisan db:seed --force
+
+# Jeu de démonstration : historique de consultations, questionnaires, et le
+# compte du secrétariat. Il ne se pose que si DONNEES_DEMO vaut « true », et
+# il se refuse lui-même dès qu'un historique existe : le rejouer ne duplique
+# rien. C'est le seul moyen de peupler la base sur une offre sans console.
+if [ "${DONNEES_DEMO:-false}" = "true" ]; then
+    php artisan db:seed --class=DemonstrationSeeder --force
+fi
+
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
