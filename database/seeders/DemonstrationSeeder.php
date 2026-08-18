@@ -125,7 +125,11 @@ class DemonstrationSeeder extends Seeder
     /** La secrétaire du premier médecin, si elle n'existe pas déjà. */
     private function secretaire(Medecin $medecin): void
     {
+        // Le journal doit trancher : « déjà présent » et « rien fait » se
+        // ressemblaient trop, et l'on ne savait pas si le compte existait.
         if (User::where('email', 'secretaire@mediguide.sn')->exists()) {
+            $this->command->info('  secrétariat déjà présent : secretaire@mediguide.sn');
+
             return;
         }
         $u = User::create([
