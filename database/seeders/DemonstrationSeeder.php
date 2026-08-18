@@ -30,15 +30,19 @@ class DemonstrationSeeder extends Seeder
             return;
         }
 
+        // Le secrétariat ne dépend pas de l'historique : il est créé d'abord,
+        // faute de quoi une base déjà peuplée le priverait de compte — c'est
+        // exactement ce qui s'est produit en production.
+        $this->secretaire($medecins->first());
+
         // Relancer ce semis doublerait l'historique : on s'arrête si des
         // rendez-vous passés existent déjà.
         if (RendezVous::where('date_heure', '<', now())->count() >= 20) {
-            $this->command->info('  Historique déjà en place : semis ignoré.');
+            $this->command->info('  Historique déjà en place : rendez-vous et questionnaires ignorés.');
 
             return;
         }
 
-        $this->secretaire($medecins->first());
         $patients = $this->patients();
         $this->command->info(sprintf('  %d patients de démonstration', $patients->count()));
 
