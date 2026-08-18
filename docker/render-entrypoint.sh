@@ -34,8 +34,12 @@ php artisan db:seed --force
 # compte du secrétariat. Il ne se pose que si DONNEES_DEMO vaut « true », et
 # il se refuse lui-même dès qu'un historique existe : le rejouer ne duplique
 # rien. C'est le seul moyen de peupler la base sur une offre sans console.
+# « set -e » interromprait le démarrage à la moindre erreur du semis, et le
+# site tomberait pour un jeu de démonstration — ce qui est arrivé une fois.
+# L'échec est donc signalé, mais le conteneur poursuit son démarrage.
 if [ "${DONNEES_DEMO:-false}" = "true" ]; then
-    php artisan db:seed --class=DemonstrationSeeder --force
+    php artisan db:seed --class=DemonstrationSeeder --force \
+        || echo "ATTENTION : le jeu de démonstration n'a pas pu être posé — le site démarre malgré tout."
 fi
 
 php artisan config:cache
