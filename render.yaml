@@ -51,6 +51,18 @@ services:
       - key: DEMO_PASSWORD
         sync: false
 
+      # Adresses des comptes de démonstration. Sans elles, l'application
+      # retombe sur patient@demo.sn, medecin@demo.sn et admin@demo.sn : des
+      # domaines fictifs, où aucun courriel ne peut arriver et qui ne
+      # correspondent pas aux comptes utilisés en développement. Les renseigner
+      # dans le tableau de bord avec de vraies adresses.
+      - key: DEMO_PATIENT_EMAIL
+        sync: false
+      - key: DEMO_MEDECIN_EMAIL
+        sync: false
+      - key: DEMO_ADMIN_EMAIL
+        sync: false
+
       # Adresse publique du service, renseignée automatiquement par Render.
       - key: APP_URL
         fromService:
