@@ -48,12 +48,12 @@ class DemonstrationSeeder extends Seeder
         // créneaux sont donc distribués, non tirés au hasard.
         $honores = $absents = $annules = 0;
         $i = 0;
-        foreach (range(1, 26) as $rang) {
+        foreach (range(1, 64) as $rang) {
             $i = $rang;
             $patient = $patients->random();
             $medecin = $medecins[$rang % $medecins->count()];
-            $quand = Carbon::now()->subDays(1 + intdiv($rang, 2))
-                ->setTime(8 + ($rang % 8), $rang % 2 ? 30 : 0);
+            $quand = Carbon::now()->subDays(1 + intdiv($rang, 3))
+                ->setTime(8 + ($rang % 9), $rang % 2 ? 30 : 0);
 
             $statut = match (true) {
                 $i % 7 === 0 => 'NO_SHOW',
@@ -70,21 +70,35 @@ class DemonstrationSeeder extends Seeder
         }
 
         // ── Des rendez-vous à venir ─────────────────────────────────────────
-        foreach (range(1, 5) as $rang) {
+        $motifs = ['Consultation', 'Suivi de traitement', 'Contrôle', 'Première visite',
+                   'Douleurs persistantes', "Résultats d'analyses"];
+        $aVenir = 0;
+        // Le premier médecin reçoit des patients aujourd'hui même : son agenda
+        // du jour doit montrer quelque chose pendant la démonstration.
+        foreach ([[0, 0, 15], [0, 0, 16], [0, 0, 17]] as $k => [$jours, $_, $heure]) {
+            RendezVous::create([
+                'patient_id' => $patients->random()->id, 'medecin_id' => $medecins[0]->id,
+                'date_heure' => Carbon::now()->addDays($jours)->setTime($heure, 0),
+                'statut' => 'CONFIRME', 'motif' => $motifs[$k % count($motifs)],
+            ]);
+            $aVenir++;
+        }
+        foreach (range(1, 12) as $rang) {
             RendezVous::create([
                 'patient_id' => $patients->random()->id,
                 'medecin_id' => $medecins[$rang % $medecins->count()]->id,
-                'date_heure' => Carbon::now()->addDays($rang)->setTime(9 + $rang, 0),
-                'statut' => 'CONFIRME', 'motif' => 'Consultation',
+                'date_heure' => Carbon::now()->addDays(1 + intdiv($rang, 3))->setTime(8 + ($rang % 8), 0),
+                'statut' => 'CONFIRME', 'motif' => $motifs[$rang % count($motifs)],
             ]);
+            $aVenir++;
         }
 
         // ── Des questionnaires, dont deux urgents ───────────────────────────
         $specialites = ['Cardiologie', 'Pédiatrie', 'Médecine Générale',
                         'Gastro-entérologie', 'Ophtalmologie'];
         $urgents = 0;
-        foreach (range(1, 18) as $i) {
-            $urgent = $i % 9 === 0;
+        foreach (range(1, 47) as $i) {
+            $urgent = $i % 8 === 0;
             if ($urgent) {
                 $urgents++;
             }
@@ -99,15 +113,18 @@ class DemonstrationSeeder extends Seeder
         }
 
         $this->command->info(sprintf(
-            '  %d honorés · %d absents · %d annulés · 5 à venir · 18 questionnaires dont %d urgents',
-            $honores, $absents, $annules, $urgents));
+            '  %d honorés · %d non honorés · %d annulés · %d à venir · 47 questionnaires dont %d urgents',
+            $honores, $absents, $annules, $aVenir, $urgents));
     }
 
     /** Quelques patients, créés une seule fois. */
     private function patients()
     {
         $noms = [['Aïssatou', 'BA'], ['Ousmane', 'SOW'], ['Mariama', 'DIOP'],
-                 ['Ibrahima', 'FAYE'], ['Ndèye', 'SECK'], ['Cheikh', 'GUEYE']];
+                 ['Ibrahima', 'FAYE'], ['Ndèye', 'SECK'], ['Cheikh', 'GUEYE'],
+                 ['Fatoumata', 'CISSÉ'], ['Modou', 'NDOYE'], ['Khady', 'SYLLA'],
+                 ['Alioune', 'BADJI'], ['Rokhaya', 'THIAM'], ['Babacar', 'SAMB'],
+                 ['Adama', 'KANE'], ['Seynabou', 'DIAGNE']];
 
         foreach ($noms as $i => [$prenom, $nom]) {
             $email = 'patient' . ($i + 1) . '@mediguide.sn';
