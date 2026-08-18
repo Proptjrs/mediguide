@@ -81,16 +81,20 @@ services:
       - key: QUEUE_CONNECTION
         value: sync
 
+      # Jeu de démonstration : historique de consultations, questionnaires et
+      # compte du secrétariat. L'offre gratuite ne donne pas accès à une
+      # console : c'est donc le démarrage du conteneur qui pose ces données,
+      # quand cette variable vaut « true ». On la remet à « false » ensuite.
+      # Le semis se refuse de lui-même si un historique existe déjà.
+      - key: DONNEES_DEMO
+        value: "false"
+
       # Envoi des courriers électroniques.
       #
       # Les confirmations et les rappels doivent partir en production comme en
-      # développement : le canal est donc SMTP, et non plus le journal. Les
-      # identifiants ne figurent pas ici — « sync: false » signifie qu'ils sont
-      # saisis à la main dans le tableau de bord de l'hébergeur, et qu'aucune
-      # synchronisation ne les écrasera. Tant qu'ils ne sont pas renseignés,
-      # l'envoi échoue sans interrompre la plateforme.
-      # Ce qui n'est pas un secret est écrit ici, et se pose tout seul au
-      # déploiement : le serveur d'envoi, son port, le chiffrement.
+      # développement : le canal est donc SMTP, et non plus le journal. Ce qui
+      # n'est pas un secret — serveur, port, chiffrement — est écrit ici et se
+      # pose tout seul au déploiement.
       - key: MAIL_MAILER
         value: smtp
       - key: MAIL_HOST
