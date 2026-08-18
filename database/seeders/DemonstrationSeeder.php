@@ -127,18 +127,19 @@ class DemonstrationSeeder extends Seeder
     {
         // Le journal doit trancher : « déjà présent » et « rien fait » se
         // ressemblaient trop, et l'on ne savait pas si le compte existait.
-        if (User::where('email', 'secretaire@mediguide.sn')->exists()) {
-            $this->command->info('  secrétariat déjà présent : secretaire@mediguide.sn');
+        $adresse = config('mediguide.demo.secretaire');
+        if (User::where('email', $adresse)->exists()) {
+            $this->command->info('  secrétariat déjà présent : ' . $adresse);
 
             return;
         }
         $u = User::create([
             'nom' => 'SARR', 'prenom' => 'Fatou', 'role' => 'secretaire',
-            'email' => 'secretaire@mediguide.sn',
+            'email' => $adresse,
             'password' => config('mediguide.demo.mot_de_passe'), 'email_verified_at' => now(),
         ]);
         Secretaire::create(['utilisateur_id' => $u->id, 'medecin_id' => $medecin->id]);
-        $this->command->info('  secrétariat créé : secretaire@mediguide.sn');
+        $this->command->info('  secrétariat créé : ' . $adresse);
     }
 
     /** Quelques patients, créés une seule fois. */

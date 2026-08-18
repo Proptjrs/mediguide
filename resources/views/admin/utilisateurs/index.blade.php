@@ -29,7 +29,8 @@
                     <div class="sub">{{ $u->email }}</div>
                 </div>
 
-                <span class="pill {{ $u->role === 'admin' ? 'r' : ($u->role === 'medecin' ? 'b' : 'g') }}">{{ $u->role }}</span>
+                <span class="pill {{ $u->role === 'admin' ? 'r' : ($u->role === 'medecin' ? 'b'
+                    : ($u->role === 'secretaire' ? 'o' : 'g')) }}">{{ $u->role }}</span>
 
                 @if ($u->email_verified_at)
                     <span class="pill g" title="Adresse confirmée">Confirmé</span>
