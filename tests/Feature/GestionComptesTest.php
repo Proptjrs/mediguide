@@ -117,4 +117,30 @@ class GestionComptesTest extends TestCase
         $this->assertFalse($u->medecin->valide);
         Notification::assertSentTo($u, \Illuminate\Auth\Notifications\VerifyEmail::class);
     }
+
+    public function test_changer_l_adresse_previent_l_ancienne_boite(): void
+    {
+        \Illuminate\Support\Facades\Notification::fake();
+
+        $admin = User::create(['nom' => 'ADMIN', 'prenom' => 'ISI', 'role' => 'admin',
+            'email' => 'admin.previent@gmail.com', 'password' => 'password',
+            'email_verified_at' => now()]);
+        $cible = User::create(['nom' => 'DIOP', 'prenom' => 'Mariama', 'role' => 'patient',
+            'email' => 'mariama.avant@gmail.com', 'password' => 'password',
+            'email_verified_at' => now()]);
+
+        $this->actingAs($admin)->put('/admin/utilisateurs/' . $cible->id, [
+            'prenom' => 'Mariama', 'nom' => 'DIOP', 'email' => 'mariama.apres@gmail.com',
+        ])->assertRedirect(route('admin.utilisateurs.index'));
+
+        // L'ancienne boîte est prévenue : sans cela, un compte pourrait être
+        // détourné sans que son titulaire ne le sache jamais.
+        \Illuminate\Support\Facades\Notification::assertSentOnDemand(
+            \App\Notifications\AdresseModifiee::class,
+            fn ($notification, $canaux, $notifiable) =>
+                $notifiable->routes['mail'] === 'mariama.avant@gmail.com');
+
+        // Et la nouvelle adresse doit être confirmée avant tout accès.
+        $this->assertNull($cible->fresh()->email_verified_at);
+    }
 }
