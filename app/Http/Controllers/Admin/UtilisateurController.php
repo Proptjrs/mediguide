@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\{Medecin, Patient, Secretaire, User};
+use App\Notifications\AdresseModifiee;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 
 /**
@@ -119,17 +122,45 @@ class UtilisateurController extends Controller
 
         // Changer l'adresse annule la confirmation : la nouvelle boîte doit être prouvée.
         if ($data['email'] !== $utilisateur->email) {
+            $ancienne = $utilisateur->email;
             $data['email_verified_at'] = null;
             $utilisateur->forceFill($data)->save();
             $utilisateur->sendEmailVerificationNotification();
+            $this->avertirAncienneAdresse($ancienne, $utilisateur, $request->user());
 
             return redirect()->route('admin.utilisateurs.index')
-                ->with('ok', 'Compte mis à jour — un lien de confirmation a été envoyé à ' . $utilisateur->email . '.');
+                ->with('ok', 'Compte mis à jour — un lien de confirmation a été envoyé à '
+                    . $utilisateur->email . ', et l\'ancienne adresse a été prévenue.');
         }
 
         $utilisateur->update($data);
 
         return redirect()->route('admin.utilisateurs.index')->with('ok', 'Compte mis à jour.');
+    }
+
+    /**
+     * Prévient l'ancienne adresse qu'elle ne pilote plus le compte.
+     *
+     * Sans cet avertissement, un administrateur — ou quelqu'un qui aurait pris
+     * la main sur un compte d'administration — pourrait rediriger le compte
+     * d'un patient vers sa propre boîte, confirmer la nouvelle adresse et en
+     * prendre le contrôle sans que le titulaire n'en sache jamais rien. Le
+     * message ne l'empêche pas, mais il le rend visible : c'est le principe
+     * d'une opération sensible qui laisse une trace chez la personne concernée.
+     *
+     * L'envoi ne doit pas faire échouer la modification : elle est déjà
+     * enregistrée, et une panne de messagerie ne doit pas la défaire.
+     */
+    private function avertirAncienneAdresse(string $ancienne, User $compte, User $auteur): void
+    {
+        try {
+            // Notification « à la volée » : l'ancienne adresse n'appartient
+            // plus à aucun compte, on lui écrit donc directement.
+            Notification::route('mail', $ancienne)
+                ->notify(new AdresseModifiee($ancienne, $compte, $auteur));
+        } catch (\Throwable $e) {
+            Log::warning("Avertissement non envoyé à {$ancienne} : " . $e->getMessage());
+        }
     }
 
     /** Suspension / réactivation : le compte reste en base mais ne peut plus se connecter. */
