@@ -22,71 +22,88 @@
         </div>
         <div class="kpi">
             <div class="ic"><svg><use href="#i-check"/></svg></div>
-            <div class="n">{{ collect($semaine)->flatten(1)->where('libre', true)->count() }}</div>
+            {{-- Les créneaux vivent dans la clé « creneaux » de chaque journée :
+                 les aplatir sans passer par elle ne donnait jamais rien. --}}
+            <div class="n">{{ collect($semaine)->pluck('creneaux')->flatten(1)->where('libre', true)->count() }}</div>
             <div class="l">Créneaux libres cette semaine</div>
             <span class="tag">semaine du {{ $lundi->translatedFormat('j F') }}</span>
         </div>
     </div>
 
-    <section class="card" style="margin-top:26px">
+    <div class="panel">
         <h3>Déclarer une absence</h3>
-        <p class="hint">Le créneau disparaît aussitôt du calendrier public : aucun patient ne peut plus le réserver.</p>
-        <form method="POST" action="{{ route('secretaire.indisponibilite.store') }}" class="grid2">
+        <p class="panel-note">Le créneau disparaît aussitôt du calendrier public : aucun patient ne peut plus le réserver.</p>
+        <form method="POST" action="{{ route('secretaire.indisponibilite.store') }}"
+              style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px">
             @csrf
-            <label>Date
-                <input type="date" name="date" required min="{{ now()->toDateString() }}">
-            </label>
-            <label>Motif
+            <div class="field" style="margin:0;flex:1;min-width:170px">
+                <label>Motif</label>
                 <select name="motif" required>
                     <option value="conge">Congé</option>
                     <option value="mission">Mission</option>
-                    <option value="urgence">Urgence</option>
+                    <option value="urgence">Urgence médicale</option>
                     <option value="formation">Formation</option>
                 </select>
-            </label>
-            <label>De (facultatif)
+            </div>
+            <div class="field" style="margin:0;width:150px">
+                <label>Date</label>
+                <input type="date" name="date" min="{{ today()->toDateString() }}" required>
+            </div>
+            <div class="field" style="margin:0;width:120px">
+                <label>Début</label>
                 <input type="time" name="heure_debut">
-            </label>
-            <label>À
+            </div>
+            <div class="field" style="margin:0;width:120px">
+                <label>Fin</label>
                 <input type="time" name="heure_fin">
-            </label>
-            <button class="btn-primary" type="submit">Enregistrer l'absence</button>
+            </div>
+            <button class="btn btn-outline btn-sm">Enregistrer</button>
         </form>
-        <p class="hint">Sans horaire, l'absence couvre la journée entière.</p>
-    </section>
+        <p class="panel-note" style="margin:0">Laisser début et fin vides pour une journée entière.</p>
+        @error('heure_fin') <div class="field-error" style="margin-top:12px">{{ $message }}</div> @enderror
+        @error('date') <div class="field-error" style="margin-top:12px">{{ $message }}</div> @enderror
+    </div>
 
-    <section class="card" style="margin-top:22px">
+    <div class="panel">
         <h3>Absences enregistrées</h3>
         @forelse ($absences as $absence)
-            <div class="ligne">
-                <span>{{ $absence->date->translatedFormat('l j F Y') }}
-                    @if ($absence->heure_debut) — de {{ substr($absence->heure_debut, 0, 5) }}
-                        à {{ substr($absence->heure_fin, 0, 5) }}
-                    @else — journée entière @endif
-                    <span class="tag">{{ ucfirst($absence->motif) }}</span>
-                </span>
+            <div class="row-item">
+                <span class="pill o">{{ ucfirst($absence->motif) }}</span>
+                <div class="grow">
+                    <h4>{{ $absence->date->translatedFormat('l j F Y') }}</h4>
+                    <div class="sub">
+                        @if ($absence->heure_debut)
+                            de {{ substr($absence->heure_debut, 0, 5) }} à {{ substr($absence->heure_fin, 0, 5) }}
+                        @else
+                            journée entière
+                        @endif
+                    </div>
+                </div>
                 <form method="POST" action="{{ route('secretaire.indisponibilite.destroy', $absence) }}">
                     @csrf @method('DELETE')
-                    <button class="btn-ghost" type="submit">Annuler</button>
+                    <button class="btn btn-outline btn-sm">Annuler</button>
                 </form>
             </div>
         @empty
-            <p class="hint">Aucune absence enregistrée.</p>
+            <p style="color:var(--muted);margin:0">Aucune absence enregistrée.</p>
         @endforelse
-    </section>
+    </div>
 
-    <section class="card" style="margin-top:22px">
+    <div class="panel">
         <h3>Rendez-vous à venir</h3>
+        <p class="panel-note">Le secrétariat consulte ces rendez-vous ; seul le médecin les clôt.</p>
         @forelse ($rendezVous as $rdv)
-            <div class="ligne">
-                <span>{{ $rdv->date_heure->translatedFormat('l j F, H\hi') }}
-                    — {{ $rdv->patient?->utilisateur?->fullName() ?? 'patient supprimé' }}
-                    <span class="tag">{{ $rdv->statut }}</span>
-                </span>
+            <div class="row-item">
+                <span class="pill b">{{ $rdv->date_heure->format('d/m · H\hi') }}</span>
+                <div class="grow">
+                    <h4>{{ $rdv->patient?->utilisateur?->fullName() ?? 'patient supprimé' }}</h4>
+                    <div class="sub">{{ $rdv->motif ?? 'Consultation' }}</div>
+                </div>
+                <span class="pill {{ $rdv->statut === 'CONFIRME' ? 'o' : ($rdv->statut === 'HONORE' ? 'g' : 'r') }}">{{ $rdv->statut }}</span>
             </div>
         @empty
-            <p class="hint">Aucun rendez-vous à venir.</p>
+            <p style="color:var(--muted);margin:0">Aucun rendez-vous à venir.</p>
         @endforelse
-    </section>
+    </div>
 </div>
 @endsection
