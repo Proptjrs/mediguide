@@ -78,14 +78,7 @@ class SanteDesRoutesTest extends TestCase
 
     public function test_les_espaces_prives_sont_fermes_au_visiteur(): void
     {
-        // S'orienter ne demande pas de compte : le questionnaire, l'assistant
-        // et le renvoi aux urgences restent ouverts. Le compte devient
-        // nécessaire dès qu'un rendez-vous doit porter un nom.
-        foreach (['/orientation', '/assistant', '/urgence'] as $url) {
-            $this->get($url)->assertOk();
-        }
-
-        foreach (['/dashboard', '/profil', '/resultats',
+        foreach (['/dashboard', '/profil', '/orientation', '/resultats', '/urgence',
                   '/admin/structures', '/admin/utilisateurs'] as $url) {
             $this->get($url)->assertRedirect();
         }
