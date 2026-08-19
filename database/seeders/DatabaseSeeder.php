@@ -105,7 +105,7 @@ class DatabaseSeeder extends Seeder
 
         // La secrétaire du premier médecin : c'est elle qui tient son agenda.
         $us = User::create(['nom' => 'SARR', 'prenom' => 'Fatou', 'role' => 'secretaire',
-            'email' => 'secretaire@mediguide.sn', 'password' => config('mediguide.demo.mot_de_passe'),
+            'email' => config('mediguide.demo.secretaire'), 'password' => config('mediguide.demo.mot_de_passe'),
             'email_verified_at' => now()]);
         Secretaire::create(['utilisateur_id' => $us->id, 'medecin_id' => $premierMedecin->id]);
 
