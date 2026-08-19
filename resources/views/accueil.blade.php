@@ -85,7 +85,7 @@
       <div class="stop-mark"><svg><use href="#i-compass"/></svg></div>
       <div class="stop-idx">ÉTAPE 1</div>
       <h3>Questionnaire</h3>
-      <p>Décrivez vos symptômes en cinq étapes simples. En cas d'urgence détectée, redirection immédiate vers le SAMU 15.</p>
+      <p>Décrivez vos symptômes en cinq étapes simples. En cas d'urgence détectée, redirection immédiate vers le SAMU 1515.</p>
     </div>
     <div class="stop">
       <div class="stop-mark"><svg><use href="#i-pin"/></svg></div>

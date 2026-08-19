@@ -674,7 +674,7 @@ footer{background:var(--text-dark);color:#94A3B8;padding:56px 0 32px;margin-top:
       </div>
       <div>
         <h4>Urgences</h4>
-        <a href="tel:15"><svg><use href="#i-alert"/></svg>SAMU — 15</a>
+        <a href="tel:1515"><svg><use href="#i-alert"/></svg>SAMU — 1515</a>
         <a href="tel:18"><svg><use href="#i-alert"/></svg>Sapeurs-Pompiers — 18</a>
         <a href="{{ route('accueil') }}"><svg><use href="#i-pin"/></svg>Hôpital Roi Baudouin · Guédiawaye</a>
       </div>
