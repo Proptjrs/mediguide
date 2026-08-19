@@ -117,22 +117,11 @@ class AssistantConversationnelTest extends TestCase
         $this->assertStringContainsString('Hôpital Roi Baudouin', $r['reponse']);
     }
 
-    public function test_l_assistant_repond_au_visiteur_comme_au_patient(): void
+    public function test_la_page_de_l_assistant_exige_une_connexion(): void
     {
-        // S'orienter ne demande pas de compte : celui qui ne sait pas vers quel
-        // service se diriger doit pouvoir le découvrir sans barrière.
-        $this->get('/assistant')->assertOk()->assertSee('Assistant MediGuide');
+        $this->get('/assistant')->assertRedirect('/connexion');
 
         $this->actingAs($this->patient())->get('/assistant')
             ->assertOk()->assertSee('Assistant MediGuide');
-    }
-
-    public function test_un_echange_sans_compte_est_conserve_sans_auteur(): void
-    {
-        $this->assistant()->repondre("j'ai mal au ventre");
-
-        $echange = EchangeAssistant::first();
-        $this->assertNotNull($echange);
-        $this->assertNull($echange->utilisateur_id);
     }
 }

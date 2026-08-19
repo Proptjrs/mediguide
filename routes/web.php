@@ -14,26 +14,20 @@ use Illuminate\Support\Facades\Route;
  | l'inscription ou à la connexion. */
 Route::get('/', [OrientationController::class, 'accueil'])->name('accueil');
 
-/* ---- Orientation : ouverte à tous ----
- | S'orienter ne demande pas de compte. Un patient qui ne sait pas vers quel
- | service se diriger doit pouvoir le découvrir immédiatement, sans barrière —
- | c'est le cœur du service rendu, et l'exiger d'emblée écarterait précisément
- | ceux que la plateforme cherche à aider. Le questionnaire ne conserve alors
- | aucun rattachement : le résultat n'appartient à personne.
- |
- | Le compte devient nécessaire au moment de réserver, c'est-à-dire dès qu'un
- | rendez-vous doit porter un nom. */
-Route::get('/orientation', QuestionnaireOrientation::class)->name('orientation');           // F1
-Route::get('/assistant', AssistantMedical::class)->name('assistant');                       // F8
-Route::get('/urgence', [OrientationController::class, 'urgence'])->name('urgence');         // F2
-
-/* ---- Ce qui suppose une identification ----
- | Les structures proposées et les créneaux d'un médecin ne sont consultables
- | qu'une fois connecté : on entre là dans la prise de rendez-vous. */
+/* ---- Parcours d'orientation ----
+ | L'accès à la plateforme suppose une identification préalable : le
+ | questionnaire, les structures proposées et les créneaux d'un médecin ne sont
+ | consultables qu'une fois connecté. */
 Route::middleware('auth')->group(function () {
+    Route::get('/orientation', QuestionnaireOrientation::class)->name('orientation');      // F1
+    Route::get('/urgence', [OrientationController::class, 'urgence'])->name('urgence');    // F2
     Route::get('/resultats', [OrientationController::class, 'resultats'])->name('resultats'); // F3
     Route::get('/medecin/{medecin}/calendrier', [RendezVousController::class, 'calendrier'])
         ->name('calendrier');                                                              // F4
+
+    // Assistant conversationnel : il oriente à partir d'une phrase libre, pour
+    // le patient qui n'entre pas dans le questionnaire pas à pas.
+    Route::get('/assistant', AssistantMedical::class)->name('assistant');                  // F8
 });
 
 /* ---- Authentification (chap. 4.2.2) ---- */
