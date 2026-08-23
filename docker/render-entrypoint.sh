@@ -30,6 +30,13 @@ php artisan package:discover --ansi
 php artisan migrate --force
 php artisan db:seed --force
 
+# Le semis principal s'arrête dès que le référentiel existe : sur une base déjà
+# en service, un praticien ou une structure ajoutés depuis n'y entreraient jamais.
+# Celui-ci complète le réseau sans rien dupliquer ni écraser, et se rejoue donc à
+# chaque démarrage. C'est ce qui met la base en ligne au niveau de la locale.
+php artisan db:seed --class=ReseauMedicalSeeder --force \
+    || echo "ATTENTION : le réseau de soins n'a pas pu être complété — le site démarre malgré tout."
+
 # Jeu de démonstration : historique de consultations, questionnaires, et le
 # compte du secrétariat. Il ne se pose que si DONNEES_DEMO vaut « true », et
 # il se refuse lui-même dès qu'un historique existe : le rejouer ne duplique
