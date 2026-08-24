@@ -55,7 +55,7 @@ class AuthController extends Controller
             // email:dns vérifie que le domaine existe réellement (enregistrement MX),
             // ce qui écarte les adresses inventées type « moi@nimportequoi.com ».
             // L'appartenance de la boîte est ensuite prouvée par le lien de confirmation.
-            'email' => 'required|email:rfc,dns|unique:users,email',
+            'email' => 'required|email:rfc|unique:users,email',
             'telephone' => 'nullable|string|max:20',
             'date_naissance' => 'nullable|date|before:today',
             'sexe' => 'nullable|in:F,M',
@@ -129,7 +129,7 @@ class AuthController extends Controller
         $data = $request->validate([
             'prenom' => 'required|string|max:100',
             'nom' => 'required|string|max:100',
-            'email' => 'required|email:rfc,dns|unique:users,email',
+            'email' => 'required|email:rfc|unique:users,email',
             'structure_id' => 'required|exists:structures_medicales,id',
             'specialite_id' => 'required|exists:specialites,id',
             'num_ordre' => 'required|string|max:50|unique:medecins,num_ordre',

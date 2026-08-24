@@ -34,7 +34,7 @@ class ProfilController extends Controller
         $data = $request->validate([
             'prenom' => 'required|string|max:100',
             'nom' => 'required|string|max:100',
-            'email' => ['required', 'email:rfc,dns', Rule::unique('users', 'email')->ignore($user->id)],
+            'email' => ['required', 'email:rfc', Rule::unique('users', 'email')->ignore($user->id)],
             'telephone' => 'nullable|string|max:30',
         ]);
 

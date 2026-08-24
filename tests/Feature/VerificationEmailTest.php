@@ -25,14 +25,29 @@ class VerificationEmailTest extends TestCase
         'password' => 'motdepasse123', 'password_confirmation' => 'motdepasse123',
     ];
 
-    public function test_une_adresse_au_domaine_inexistant_est_refusee(): void
+    /**
+     * L'inscription accepte tout domaine ; c'est la confirmation qui filtre.
+     *
+     * La plateforme exigeait auparavant que le domaine sache recevoir du courrier.
+     * Le contrôle écartait des adresses parfaitement valides — dont celles en
+     * mediguide.sn, le domaine des comptes de la plateforme — et dépendait d'une
+     * interrogation réseau au moment de l'inscription. Il est retiré : le compte
+     * se crée, mais reste inaccessible tant que l'adresse n'est pas confirmée.
+     * Une adresse qui ne reçoit rien n'ouvre donc aucun accès.
+     */
+    public function test_un_domaine_quelconque_est_accepte_mais_le_compte_reste_a_confirmer(): void
     {
         $this->post(route('register'), [
             ...$this->inscription,
             'email' => 'moi@domaine-qui-nexiste-vraiment-pas-12345.com',
-        ])->assertSessionHasErrors('email');
+        ])->assertSessionHasNoErrors();
 
-        $this->assertDatabaseCount('users', 0);
+        $this->assertDatabaseCount('users', 1);
+        $this->assertNull(
+            User::where('email', 'moi@domaine-qui-nexiste-vraiment-pas-12345.com')
+                ->first()->email_verified_at,
+            "le compte doit rester non confirmé : c'est lui qui garde la porte"
+        );
     }
 
     public function test_linscription_envoie_un_lien_de_confirmation(): void

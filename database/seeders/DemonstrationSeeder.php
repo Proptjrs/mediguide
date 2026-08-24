@@ -34,6 +34,7 @@ class DemonstrationSeeder extends Seeder
         // faute de quoi une base déjà peuplée le priverait de compte — c'est
         // exactement ce qui s'est produit en production.
         $this->secretaire($medecins->first());
+        $this->administrateur();
 
         // Relancer ce semis doublerait l'historique : on s'arrête si des
         // rendez-vous passés existent déjà.
@@ -120,6 +121,30 @@ class DemonstrationSeeder extends Seeder
         $this->command->info(sprintf(
             '  %d honorés · %d non honorés · %d annulés · %d à venir · 47 questionnaires dont %d urgents',
             $honores, $absents, $annules, $aVenir, $urgents));
+    }
+
+    /**
+     * Un administrateur de démonstration, à adresse neutre.
+     *
+     * Le compte d'administration ordinaire porte l'adresse personnelle du
+     * titulaire, celle qui reçoit les courriels. Celui-ci permet de montrer la
+     * console — en soutenance comme dans la vidéo — sans exposer cette adresse.
+     * Il ne se pose qu'avec le jeu de démonstration, jamais de lui-même.
+     */
+    private function administrateur(): void
+    {
+        $adresse = 'admin@mediguide.sn';
+        if (User::where('email', $adresse)->exists()) {
+            $this->command->info('  administrateur de démonstration déjà présent : ' . $adresse);
+
+            return;
+        }
+        User::create([
+            'nom' => 'DÉMONSTRATION', 'prenom' => 'Compte', 'role' => 'admin',
+            'email' => $adresse,
+            'password' => config('mediguide.demo.mot_de_passe'), 'email_verified_at' => now(),
+        ]);
+        $this->command->info('  administrateur de démonstration créé : ' . $adresse);
     }
 
     /** La secrétaire du premier médecin, si elle n'existe pas déjà. */

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\{Medecin, Questionnaire, RendezVous, StructureMedicale, User};
+use App\Notifications\CompteMedecinValide;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -144,6 +145,12 @@ class DashboardController extends Controller
     {
         $medecin->update(['valide' => true]);
 
-        return back()->with('ok', 'Médecin validé : ' . $medecin->utilisateur->fullName());
+        // Le médecin doit l'apprendre : jusqu'ici la validation ne se voyait que
+        // du côté de l'administration, et l'intéressé restait devant un compte
+        // refusé sans savoir quand il serait ouvert.
+        $medecin->utilisateur->notify(new CompteMedecinValide($medecin));
+
+        return back()->with('ok', 'Médecin validé : ' . $medecin->utilisateur->fullName()
+            . ' — il vient d\'en être averti par courriel.');
     }
 }

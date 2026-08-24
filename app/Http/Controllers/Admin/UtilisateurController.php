@@ -69,7 +69,7 @@ class UtilisateurController extends Controller
         $data = $request->validate([
             'prenom' => 'required|string|max:100',
             'nom' => 'required|string|max:100',
-            'email' => 'required|email:rfc,dns|unique:users,email',
+            'email' => 'required|email:rfc|unique:users,email',
             'telephone' => 'nullable|string|max:30',
             'role' => 'required|in:patient,admin,secretaire',
             // Une secrétaire sans médecin n'aurait pas d'agenda : le champ est
@@ -116,7 +116,7 @@ class UtilisateurController extends Controller
         $data = $request->validate([
             'prenom' => 'required|string|max:100',
             'nom' => 'required|string|max:100',
-            'email' => ['required', 'email:rfc,dns', Rule::unique('users', 'email')->ignore($utilisateur->id)],
+            'email' => ['required', 'email:rfc', Rule::unique('users', 'email')->ignore($utilisateur->id)],
             'telephone' => 'nullable|string|max:30',
         ]);
 
