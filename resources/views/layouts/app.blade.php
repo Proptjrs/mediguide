@@ -414,7 +414,11 @@ select::-ms-expand{display:none}
   border-radius:999px;padding:7px 14px;font-size:.92rem;cursor:pointer}
 .chat-piste:hover{background:var(--blue-pale);border-color:var(--blue)}
 .chat-saisie{display:flex;gap:10px;margin-top:14px}
-.chat-saisie input{flex:1;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:1rem}
+/* « min-width:0 » est indispensable : sans lui un élément de flexbox refuse de
+   descendre sous la largeur de son contenu, le champ garde sa taille naturelle
+   et le bouton « Envoyer » sort de l'écran sur un téléphone. */
+.chat-saisie input{flex:1 1 0;min-width:0;padding:12px 14px;border:1px solid var(--border);border-radius:10px;font-size:1rem}
+.chat-saisie button{flex:0 0 auto}
 .chat-saisie input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-pale)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
@@ -426,9 +430,11 @@ body.hors-ligne .bandeau-hors-ligne{display:flex}
 .panel{background:var(--white);border:1px solid var(--border-2);border-radius:var(--r-lg);padding:28px;margin-bottom:20px;box-shadow:var(--shadow-xs)}
 .panel h3{font-size:1.15rem;font-weight:700;color:var(--text-dark);margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
 .panel .panel-note{font-size:.86rem;color:var(--muted);margin:-8px 0 16px}
-.row-item{display:flex;gap:14px;align-items:center;padding:15px 4px;border-bottom:1px solid var(--border-2)}
+/* La ligne passe à la ligne plutôt que de pousser ses boutons hors de l'écran :
+   sur un téléphone, « Modifier » et « Annuler » sortaient du cadre. */
+.row-item{display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:15px 4px;border-bottom:1px solid var(--border-2)}
 .row-item:last-child{border:none}
-.row-item .grow{flex:1}
+.row-item .grow{flex:1 1 12rem;min-width:0}
 .row-item h4{font-size:.96rem;color:var(--text-dark);font-weight:700}
 .row-item .sub{font-size:.83rem;color:var(--muted);margin-top:2px}
 .pill{font-size:.74rem;font-weight:700;padding:6px 13px;border-radius:var(--r-pill);display:inline-block}
