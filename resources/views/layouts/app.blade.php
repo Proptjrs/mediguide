@@ -258,8 +258,10 @@ select::-ms-expand{display:none}
 
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 
-.geo-box{display:flex;gap:16px;align-items:center;padding:20px;border-radius:var(--r);background:var(--blue-pale-2);border:1px solid var(--blue-pale)}
-.geo-box .st{flex:1;font-size:.93rem;color:var(--muted)}
+/* Sur un écran de 320 px, le bouton « Me localiser » sortait du cadre : la
+   rangée passe à la ligne plutôt que de le pousser dehors. */
+.geo-box{display:flex;flex-wrap:wrap;gap:16px;align-items:center;padding:20px;border-radius:var(--r);background:var(--blue-pale-2);border:1px solid var(--blue-pale)}
+.geo-box .st{flex:1 1 10rem;min-width:0;font-size:.93rem;color:var(--muted)}
 .geo-box .st b{color:var(--text-dark)}
 
 .choice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
@@ -292,7 +294,7 @@ select::-ms-expand{display:none}
 .alarm:hover{border-color:var(--red)}
 .alarm input{width:18px;height:18px;accent-color:var(--red);flex:none}
 .alarm.sel{background:var(--red-pale);border-color:var(--red);font-weight:700;color:var(--red-dark)}
-.q-nav{display:flex;justify-content:space-between;margin-top:36px;gap:14px}
+.q-nav{display:flex;flex-wrap:wrap;justify-content:space-between;margin-top:36px;gap:14px}
 
 /* ====== URGENCE (page dédiée) ====== */
 .urgence-screen{min-height:calc(100vh - 72px);background:linear-gradient(160deg,#7F1D1D,var(--red));display:flex;align-items:center;justify-content:center;padding:56px 28px}
