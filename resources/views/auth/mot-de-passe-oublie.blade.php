@@ -13,7 +13,7 @@
             @csrf
             <div class="field">
                 <label>Adresse e-mail</label>
-                <input type="email" name="email" value="{{ old('email') }}" required autofocus placeholder="vous@exemple.sn">
+                <input type="email" name="email" value="{{ old('email') }}" required data-focus-large placeholder="vous@exemple.sn">
                 @error('email') <div class="field-error">{{ $message }}</div> @enderror
             </div>
             <button class="btn btn-primary" style="width:100%;justify-content:center">

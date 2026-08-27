@@ -20,7 +20,7 @@
             </div>
             <div class="field">
                 <label>Nouveau mot de passe</label>
-                <input type="password" name="password" required minlength="8" autofocus placeholder="8 caractères minimum">
+                <input type="password" name="password" required minlength="8" data-focus-large placeholder="8 caractères minimum">
                 @error('password') <div class="field-error">{{ $message }}</div> @enderror
             </div>
             <div class="field">

@@ -748,5 +748,22 @@ document.addEventListener('alpine:init', () => {
 });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/*
+ * Le premier champ des écrans d'identification ne se saisit tout seul que sur
+ * un grand écran.
+ *
+ * L'attribut « autofocus » y faisait défiler la page jusqu'au champ dès son
+ * ouverture : sur un téléphone, on arrivait au milieu de la page, l'en-tête
+ * fixe recouvrait le haut du contenu et le clavier surgissait aussitôt. Ici le
+ * focus est posé sans défilement, et seulement quand l'écran est assez large
+ * pour que le champ soit déjà visible.
+ */
+document.addEventListener('DOMContentLoaded', function () {
+    if (window.innerWidth < 900) return;
+    var champ = document.querySelector('[data-focus-large]');
+    if (champ) champ.focus({ preventScroll: true });
+});
+</script>
 </body>
 </html>

@@ -28,7 +28,7 @@
           @csrf
           <div class="field">
             <label>E-mail</label>
-            <input type="email" name="email" value="{{ old('email') }}" required autofocus placeholder="vous@exemple.sn">
+            <input type="email" name="email" value="{{ old('email') }}" required data-focus-large placeholder="vous@exemple.sn">
             @error('email') <div class="field-error">{{ $message }}</div> @enderror
           </div>
           <div class="field">
