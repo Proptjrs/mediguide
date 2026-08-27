@@ -234,7 +234,13 @@ main{padding-top:72px;min-height:70vh}
 .q-step h2{font-size:1.5rem;color:var(--text-dark);font-weight:800}
 .q-step .hint{color:var(--muted);font-size:.94rem;margin:8px 0 28px}
 
-.field{margin-bottom:20px}
+/* Un champ de saisie porte une largeur naturelle héritée de l'attribut « size »
+   du HTML — une vingtaine de caractères. Sur un écran étroit cette largeur
+   dépasse la carte qui le contient, et le champ se retrouve rogné sans qu'aucune
+   barre de défilement ne le signale. Ces deux règles l'obligent à suivre la
+   largeur disponible. */
+.field{margin-bottom:20px;min-width:0}
+input,select,textarea{max-width:100%}
 .field label{display:block;font-weight:700;font-size:.88rem;color:var(--text-dark);margin-bottom:9px}
 .field input,.field textarea{
   width:100%;padding:13px 16px;border:1.6px solid var(--border);border-radius:var(--r-sm);
@@ -256,7 +262,14 @@ select:focus{outline:none;border-color:var(--blue);background-color:var(--white)
 select:disabled{opacity:.5;cursor:not-allowed}
 select::-ms-expand{display:none}
 
+/* « min-width:0 » sur les enfants : sans lui, un champ de saisie refuse de
+   descendre sous sa largeur naturelle, la grille déborde de la carte — qui
+   la rogne au lieu de la laisser défiler. Le second champ disparaissait
+   ainsi à moitié sur un téléphone, sans qu'aucune barre de défilement ne le
+   signale. */
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid2>*{min-width:0}
+.grid2 input,.grid2 select{max-width:100%}
 
 /* Sur un écran de 320 px, le bouton « Me localiser » sortait du cadre : la
    rangée passe à la ligne plutôt que de le pousser dehors. */
@@ -467,7 +480,13 @@ footer{background:var(--text-dark);color:#94A3B8;padding:56px 0 32px;margin-top:
 .foot-base{display:flex;justify-content:space-between;gap:14px;padding-top:24px;font-size:.83rem;flex-wrap:wrap}
 
 .auth-shell{max-width:920px;margin:0 auto;padding:64px 28px 96px}
+/* « overflow:hidden » arrondit les angles de la carte, mais il masque aussi ce
+   qui dépasse : sur un écran étroit la moitié droite des formulaires était
+   simplement coupée, sans barre de défilement pour l'annoncer. Les deux colonnes
+   doivent donc pouvoir se réduire — d'où « min-width:0 », qu'un élément de
+   grille n'applique pas de lui-même. */
 .auth-shell-in{background:var(--white);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);overflow:hidden;display:grid;grid-template-columns:1fr 1fr}
+.auth-shell-in>*{min-width:0}
 .auth-side{background:linear-gradient(160deg,var(--blue-deep),var(--blue));padding:48px 40px;color:#fff;display:flex;flex-direction:column;justify-content:space-between}
 .auth-side h3{font-size:1.5rem;font-weight:800;line-height:1.3}
 .auth-side p{color:#BAE6FD;font-size:.92rem;margin-top:14px;line-height:1.7}
@@ -527,6 +546,10 @@ footer{background:var(--text-dark);color:#94A3B8;padding:56px 0 32px;margin-top:
   .hero-cta .btn{width:100%;justify-content:center}
   .hero-stats{gap:22px}
 }
+/* Sous 560 px, deux champs côte à côte deviennent illisibles : les paires
+   « prénom / nom » ou « mot de passe / confirmation » passent l'une sous
+   l'autre. */
+@media(max-width:560px){.grid2{grid-template-columns:1fr}}
 @media(max-width:460px){.choice-grid{grid-template-columns:1fr}.cal-grid{grid-template-columns:1fr}}
 
 /* ====== ORDONNANCE ====== */
