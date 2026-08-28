@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\Courriel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{DB, Hash};
 use Illuminate\Validation\Rule;
@@ -49,7 +50,10 @@ class ProfilController extends Controller
         $user->forceFill($data)->save();
 
         if ($adresseChangee) {
-            $user->sendEmailVerificationNotification();
+            Courriel::tenter(
+                fn () => $user->sendEmailVerificationNotification(),
+                "lien de confirmation d'adresse"
+            );
 
             return redirect()->route('verification.notice')
                 ->with('ok', 'Adresse modifiée — un lien de confirmation vient d\'être envoyé à ' . $user->email . '.');

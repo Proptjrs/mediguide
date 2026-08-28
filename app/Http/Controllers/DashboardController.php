@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\Courriel;
 use App\Models\{Medecin, Questionnaire, RendezVous, StructureMedicale, User};
 use App\Notifications\CompteMedecinValide;
 use Illuminate\Http\Request;
@@ -148,9 +149,16 @@ class DashboardController extends Controller
         // Le médecin doit l'apprendre : jusqu'ici la validation ne se voyait que
         // du côté de l'administration, et l'intéressé restait devant un compte
         // refusé sans savoir quand il serait ouvert.
-        $medecin->utilisateur->notify(new CompteMedecinValide($medecin));
+        $averti = Courriel::tenter(
+            fn () => $medecin->utilisateur->notify(new CompteMedecinValide($medecin)),
+            'avis de validation au médecin'
+        );
 
+        // Le message ne promet l'envoi que s'il a bien eu lieu : annoncer un
+        // courriel qui n'est jamais parti est pire que de ne rien annoncer.
         return back()->with('ok', 'Médecin validé : ' . $medecin->utilisateur->fullName()
-            . ' — il vient d\'en être averti par courriel.');
+            . ($averti
+                ? ' — il vient d\'en être averti par courriel.'
+                : ' — l\'avis par courriel n\'a pas pu partir, le serveur de messagerie n\'a pas répondu.'));
     }
 }

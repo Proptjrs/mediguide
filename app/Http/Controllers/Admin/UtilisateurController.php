@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Support\Courriel;
 use App\Http\Controllers\Controller;
 use App\Models\{Medecin, Patient, Secretaire, User};
 use App\Notifications\AdresseModifiee;
@@ -125,7 +126,10 @@ class UtilisateurController extends Controller
             $ancienne = $utilisateur->email;
             $data['email_verified_at'] = null;
             $utilisateur->forceFill($data)->save();
-            $utilisateur->sendEmailVerificationNotification();
+            Courriel::tenter(
+                fn () => $utilisateur->sendEmailVerificationNotification(),
+                "lien de confirmation d'adresse"
+            );
             $this->avertirAncienneAdresse($ancienne, $utilisateur, $request->user());
 
             return redirect()->route('admin.utilisateurs.index')
@@ -156,8 +160,11 @@ class UtilisateurController extends Controller
         try {
             // Notification « à la volée » : l'ancienne adresse n'appartient
             // plus à aucun compte, on lui écrit donc directement.
-            Notification::route('mail', $ancienne)
-                ->notify(new AdresseModifiee($ancienne, $compte, $auteur));
+            Courriel::tenter(
+                fn () => Notification::route('mail', $ancienne)
+                    ->notify(new AdresseModifiee($ancienne, $compte, $auteur)),
+                "avertissement à l'ancienne adresse"
+            );
         } catch (\Throwable $e) {
             Log::warning("Avertissement non envoyé à {$ancienne} : " . $e->getMessage());
         }

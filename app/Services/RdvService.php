@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\Courriel;
 use App\Models\{Disponibilite, Medecin, Patient, RendezVous};
 use App\Notifications\RdvConfirme;
 use Carbon\Carbon;
@@ -96,7 +97,10 @@ class RdvService
             // pris : l'échec est journalisé, la réservation tient.
             DB::afterCommit(function () use ($patient, $rdv) {
                 try {
-                    $patient->utilisateur->notify(new RdvConfirme($rdv));
+                    Courriel::tenter(
+                        fn () => $patient->utilisateur->notify(new RdvConfirme($rdv)),
+                        'confirmation de rendez-vous'
+                    );
                 } catch (\Throwable $e) {
                     Log::warning('Confirmation non envoyée pour le rendez-vous ' . $rdv->id
                         . ' : ' . $e->getMessage());

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\Courriel;
 use App\Models\{Medecin, Patient, Specialite, StructureMedicale, User};
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -109,7 +110,10 @@ class AuthController extends Controller
             return redirect()->route('dashboard');
         }
 
-        $request->user()->sendEmailVerificationNotification();
+        Courriel::tenter(
+            fn () => $request->user()->sendEmailVerificationNotification(),
+            "lien de confirmation d'adresse"
+        );
 
         return back()->with('ok', 'Un nouveau lien vient de vous être envoyé.');
     }
