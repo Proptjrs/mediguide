@@ -78,7 +78,10 @@ class AuthController extends Controller
             return $user;
         });
 
-        event(new Registered($user));      // déclenche l'envoi du lien de confirmation
+        // L'événement déclenche l'envoi du lien de confirmation par un écouteur
+        // de Laravel : c'est donc ici, et non au point d'envoi, qu'il faut se
+        // prémunir d'un serveur de messagerie injoignable.
+        Courriel::tenter(fn () => event(new Registered($user)), "lien de confirmation d'adresse");
         Auth::login($user);
 
         return redirect()->route('verification.notice')
@@ -159,7 +162,7 @@ class AuthController extends Controller
         // Le médecin franchit DEUX barrières indépendantes : confirmer son adresse
         // (elle lui appartient) et voir son numéro d'Ordre validé par l'admin
         // (il est bien médecin). Le lien de confirmation part donc dès maintenant.
-        event(new Registered($user));
+        Courriel::tenter(fn () => event(new Registered($user)), "lien de confirmation d'adresse");
 
         return redirect()->route('login')->with('ok',
             'Inscription transmise. Confirmez votre adresse via l\'e-mail que nous venons de vous envoyer, '

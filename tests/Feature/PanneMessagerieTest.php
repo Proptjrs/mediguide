@@ -4,8 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\{Specialite, StructureMedicale, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Mail;
-use Symfony\Component\Mailer\Exception\TransportException;
 use Tests\TestCase;
 
 /**
@@ -19,17 +17,22 @@ class PanneMessagerieTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** Simule un serveur de messagerie injoignable. */
+    /**
+     * Provoque une vraie panne, et non une simulation.
+     *
+     * Une doublure du service de courrier ne prouvait rien : l'envoi part d'un
+     * écouteur d'événement de Laravel qu'elle n'interceptait pas, le test
+     * passait donc sans jamais rencontrer la panne qu'il prétendait décrire.
+     * On dirige ici le courrier vers un hôte qui n'existe pas.
+     */
     private function messagerieEnPanne(): void
     {
-        Mail::shouldReceive('mailer')->andReturnSelf();
-        Mail::shouldReceive('to')->andReturnSelf();
-        Mail::shouldReceive('send')->andThrow(
-            new TransportException('Connection could not be established with host "smtp.gmail.com:587"')
-        );
-        Mail::shouldReceive('alwaysFrom')->andReturnNull();
-        Mail::shouldReceive('alwaysReplyTo')->andReturnNull();
-        Mail::shouldReceive('alwaysTo')->andReturnNull();
+        config([
+            'mail.default' => 'smtp',
+            'mail.mailers.smtp.host' => 'serveur.qui.nexiste.pas.invalid',
+            'mail.mailers.smtp.port' => 2525,
+            'mail.mailers.smtp.timeout' => 1,
+        ]);
     }
 
     public function test_linscription_aboutit_meme_si_le_courriel_ne_part_pas(): void
