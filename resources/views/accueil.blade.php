@@ -19,6 +19,11 @@
           <a class="btn btn-primary" href="{{ route('orientation') }}"><svg><use href="#i-compass"/></svg> Démarrer l'orientation</a>
         @endauth
         <a class="btn btn-outline" href="{{ route('resultats') }}"><svg><use href="#i-pin"/></svg> Voir les structures proches</a>
+        {{-- Accès direct aux secours, sans compte ni questionnaire : quelqu'un qui
+             vit une urgence n'a pas à s'inscrire pour trouver un numéro. --}}
+        <a class="btn btn-urgence" href="{{ route('urgence') }}">
+            <svg><use href="#i-alert"/></svg> Urgence — voir les secours
+        </a>
       </div>
       <div class="hero-stats rise d5">
         <div><b>18</b><span>Spécialités couvertes</span></div>

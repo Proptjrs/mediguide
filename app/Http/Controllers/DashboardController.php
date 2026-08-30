@@ -161,4 +161,19 @@ class DashboardController extends Controller
                 ? ' — il vient d\'en être averti par courriel.'
                 : ' — l\'avis par courriel n\'a pas pu partir, le serveur de messagerie n\'a pas répondu.'));
     }
+    /**
+     * Refuse — ou retire — la validation d'un médecin.
+     *
+     * Le compte n'est pas supprimé : le praticien peut avoir mal saisi son numéro
+     * d'Ordre, et son historique de rendez-vous doit survivre à la décision. Il
+     * redevient simplement inactif, comme au lendemain de son inscription.
+     */
+    public function invaliderMedecin(Medecin $medecin)
+    {
+        $medecin->update(['valide' => false]);
+
+        return back()->with('ok', 'Inscription refusée : ' . $medecin->utilisateur->fullName()
+            . " — son compte reste fermé tant que son numéro d'Ordre n'est pas vérifié.");
+    }
+
 }

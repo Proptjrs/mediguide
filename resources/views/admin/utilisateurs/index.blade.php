@@ -3,7 +3,7 @@
 @section('content')
 <div class="wrap dash-shell">
     <h2 class="k-title">Comptes utilisateurs</h2>
-    <p class="k-sub" style="margin-bottom:28px">Créer, modifier, suspendre ou supprimer un compte (chap. 2 du mémoire).</p>
+    <p class="k-sub" style="margin-bottom:28px">Créer, modifier, activer ou désactiver un compte.</p>
 
     <div class="panel">
         <h3>Rechercher
@@ -49,7 +49,7 @@
 
                 <form method="POST" action="{{ route('admin.utilisateurs.activation', $u) }}">
                     @csrf @method('PATCH')
-                    <button class="btn btn-ghost btn-sm">{{ $u->actif ? 'Suspendre' : 'Réactiver' }}</button>
+                    <button class="btn btn-ghost btn-sm">{{ $u->actif ? 'Désactiver' : 'Activer' }}</button>
                 </form>
 
                 <form method="POST" action="{{ route('admin.utilisateurs.destroy', $u) }}"

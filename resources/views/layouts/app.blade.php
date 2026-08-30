@@ -239,6 +239,9 @@ main{padding-top:72px;min-height:70vh}
    dépasse la carte qui le contient, et le champ se retrouve rogné sans qu'aucune
    barre de défilement ne le signale. Ces deux règles l'obligent à suivre la
    largeur disponible. */
+/* Le bouton des secours : rouge franc, il doit se trouver sans être cherché. */
+.btn-urgence{background:var(--red);color:#fff;border:1px solid var(--red)}
+.btn-urgence:hover{background:var(--red-dark,#B91C1C);color:#fff}
 .field{margin-bottom:20px;min-width:0}
 input,select,textarea{max-width:100%}
 .field label{display:block;font-weight:700;font-size:.88rem;color:var(--text-dark);margin-bottom:9px}

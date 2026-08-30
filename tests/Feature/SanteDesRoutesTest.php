@@ -78,7 +78,7 @@ class SanteDesRoutesTest extends TestCase
 
     public function test_les_espaces_prives_sont_fermes_au_visiteur(): void
     {
-        foreach (['/dashboard', '/profil', '/orientation', '/resultats', '/urgence',
+        foreach (['/dashboard', '/profil', '/orientation', '/resultats',
                   '/admin/structures', '/admin/utilisateurs'] as $url) {
             $this->get($url)->assertRedirect();
         }
@@ -93,5 +93,21 @@ class SanteDesRoutesTest extends TestCase
             $this->assertContains($reponse->getStatusCode(), [302, 403],
                 "{$url} devrait être refusée au patient, reçu {$reponse->getStatusCode()}");
         }
+    }
+
+    /**
+     * Les secours restent joignables sans compte.
+     *
+     * Tout le reste est fermé au visiteur, et c'est voulu. Cette page-là fait
+     * exception : quelqu'un qui vit une urgence n'a pas à s'inscrire, confirmer
+     * une adresse puis répondre à cinq écrans pour lire le numéro du SAMU. Elle
+     * n'affiche aucune donnée personnelle — des numéros et des adresses.
+     */
+    public function test_les_secours_sont_ouverts_a_tous(): void
+    {
+        $reponse = $this->get('/urgence');
+
+        $reponse->assertOk();
+        $reponse->assertSee('1515');
     }
 }

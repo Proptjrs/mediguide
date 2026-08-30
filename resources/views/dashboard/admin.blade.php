@@ -150,9 +150,18 @@
                     <h4>{{ $m->utilisateur->fullName() }}</h4>
                     <div class="sub">{{ $m->specialite->nom }} · n° Ordre : {{ $m->num_ordre }}</div>
                 </div>
-                <form method="POST" action="{{ route('admin.valider', $m) }}">
-                    @csrf <button class="btn btn-primary btn-sm">Valider</button>
-                </form>
+                {{-- L'administrateur statue : il accepte ou il refuse. N'offrir que
+                     « Valider » laissait un numéro d'Ordre douteux en attente pour
+                     toujours, sans trace de la décision. --}}
+                <div style="display:flex;gap:8px">
+                    <form method="POST" action="{{ route('admin.valider', $m) }}">
+                        @csrf <button class="btn btn-primary btn-sm">Valider</button>
+                    </form>
+                    <form method="POST" action="{{ route('admin.invalider', $m) }}"
+                          onsubmit="return confirm('Refuser l\'inscription de {{ $m->utilisateur->fullName() }} ? Son compte restera fermé.')">
+                        @csrf <button class="btn btn-ghost btn-sm">Invalider</button>
+                    </form>
+                </div>
             </div>
         @empty
             <p style="color:var(--muted);margin:0">Aucune validation en attente.</p>
@@ -181,7 +190,7 @@
 
     <div class="panel">
         <h3>Comptes utilisateurs <span class="pill b">{{ $nbComptes }} comptes</span></h3>
-        <p class="panel-note">Créer, modifier, suspendre ou supprimer un compte. Un patient s'inscrit seul ;
+        <p class="panel-note">Créer, modifier, activer ou désactiver un compte. Un patient s'inscrit seul ;
             un médecin s'inscrit puis attend la validation de son n° d'Ordre ; un administrateur ne se crée qu'ici.</p>
         <a href="{{ route('admin.utilisateurs.index') }}" class="btn btn-outline btn-sm">Ouvrir les comptes</a>
     </div>

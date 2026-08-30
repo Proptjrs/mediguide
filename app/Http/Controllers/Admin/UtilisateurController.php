@@ -15,7 +15,7 @@ use Illuminate\Validation\Rule;
 
 /**
  * Gestion des comptes utilisateurs par l'administrateur
- * (mémoire, chap. 2 : « Créer, modifier, suspendre ou supprimer un compte »).
+ * (mémoire, chap. 2 : « Créer, modifier, activer ou désactiver un compte »).
  *
  * Rappel de la logique d'accès aux trois rôles :
  *  - patient : libre-service, une seule barrière (confirmer son adresse) ;
@@ -174,7 +174,7 @@ class UtilisateurController extends Controller
     public function basculerActivation(Request $request, User $utilisateur)
     {
         if ($utilisateur->id === $request->user()->id) {
-            return back()->with('erreur', 'Vous ne pouvez pas suspendre votre propre compte.');
+            return back()->with('erreur', 'Vous ne pouvez pas désactiver votre propre compte.');
         }
 
         $utilisateur->update(['actif' => ! $utilisateur->actif]);

@@ -14,13 +14,19 @@ use Illuminate\Support\Facades\Route;
  | l'inscription ou à la connexion. */
 Route::get('/', [OrientationController::class, 'accueil'])->name('accueil');
 
+/* ---- Les secours, ouverts à tous ----
+ | Une personne en détresse ne doit pas avoir à créer un compte, confirmer une
+ | adresse puis répondre à cinq écrans avant de lire le numéro du SAMU. Cette
+ | page est donc la seconde — et la dernière — accessible sans identification.
+ | Elle ne montre aucune donnée personnelle : des numéros et des adresses. */
+Route::get('/urgence', [OrientationController::class, 'urgence'])->name('urgence');    // F2
+
 /* ---- Parcours d'orientation ----
  | L'accès à la plateforme suppose une identification préalable : le
  | questionnaire, les structures proposées et les créneaux d'un médecin ne sont
  | consultables qu'une fois connecté. */
 Route::middleware('auth')->group(function () {
     Route::get('/orientation', QuestionnaireOrientation::class)->name('orientation');      // F1
-    Route::get('/urgence', [OrientationController::class, 'urgence'])->name('urgence');    // F2
     Route::get('/resultats', [OrientationController::class, 'resultats'])->name('resultats'); // F3
     Route::get('/medecin/{medecin}/calendrier', [RendezVousController::class, 'calendrier'])
         ->name('calendrier');                                                              // F4
@@ -95,6 +101,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('/admin/medecin/{medecin}/valider', [DashboardController::class, 'validerMedecin'])
         ->middleware('role:admin')->name('admin.valider');                               // UC-A2
+    // L'administrateur statue dans les deux sens : il valide, ou il refuse.
+    Route::post('/admin/medecin/{medecin}/invalider', [DashboardController::class, 'invaliderMedecin'])
+        ->middleware('role:admin')->name('admin.invalider');
 
     // Plannings : définis par l'admin, pas par le médecin (chap. 3)
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {

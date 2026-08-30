@@ -28,6 +28,6 @@ class OrientationController extends Controller
     /** F2 — écran urgence SAMU 15 / Pompiers 18. */
     public function urgence(Request $request)
     {
-        return view('urgence', ['score' => (int) $request->query('score', 7)]);
+        return view('urgence', ['score' => (int) $request->query('score', 0)]);
     }
 }
